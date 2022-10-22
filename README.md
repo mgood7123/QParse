@@ -1,2 +1,2 @@
 # QParse
-A powerful Parser Combinator library with error repotring and input rewriting capabilities
+A powerful Parser Combinator library with error reporting and input rewriting capabilities
