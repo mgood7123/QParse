@@ -29,6 +29,8 @@ we then create a `Grammar`
 
 a `Grammar` is a set of `Rule` objects that define the `Grammar Definition`
 
+these are sometimes called `expressions` as they `express` how you want to parse something
+
 for example, lets parse `"some string"`
 
 ```cpp
