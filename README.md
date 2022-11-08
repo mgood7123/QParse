@@ -47,7 +47,7 @@ we know it consists of alphabetical characters and a white space
 
 for this we will use `Rules::Sequence` and `Rules::Range`
 
-```
+```cpp
 
 auto text = new Rules::OneOrMore(
   new Rules::Range('a', 'z')
@@ -59,6 +59,36 @@ Rules::Sequence({ text, space, text }).match(iter);
 ```
 
 here, we match against `one or more` range of `a to z`, followed by a space, followed by `one or more` range of `a to z`
+
+you may notice we do not delete `text` or `space`, this is because each `Rule` takes a `Rule*` object, and manages its lifetime automatically
+
+```cpp
+{
+    Rules::At(
+        new Rules::Char('a') // managed by At
+    );
+}
+// At is destructed
+// Char gets deleted by the destructor
+
+```
+
+this is done via a hidden `RuleHolder*` object
+
+a `RuleHolder` object extends `Rule`, and manages the lifetime of a `Rule` object via `reference counting`
+
+this makes it possible to use a `Rule` in multiple places without worrying about `dangling references` or `use-after-free`
+
+
+all `Rules::` that accept `Rule*` objects must store each `Rule*` object in a `RuleHolder*` object
+
+this is done by simply extending `RuleHolder` or by extending `Rule` and then storing each `Rule*` inside a `RuleHolder`
+
+a `RuleHolder` can only contain one `Rule` at a time
+
+
+
+we will cover some advance topics such as conditional expressions and stack expressions later
 
 ## Capabilities
 
