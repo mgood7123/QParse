@@ -62,7 +62,7 @@ Rules::Sequence({ text, space, text }).match(iter);
 
 here, we match against `one or more` range of `a to z`, followed by a space, followed by `one or more` range of `a to z`
 
-you may notice we do not delete `text` or `space`, this is because each `Rule` takes a `Rule*` object, and manages its lifetime automatically
+you may notice we do not delete `text` or `space`, this is because each `Rules::` takes a `Rule*` object, and manages its lifetime automatically
 
 ```cpp
 {
