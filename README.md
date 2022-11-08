@@ -90,7 +90,7 @@ a `RuleHolder` can only contain one `Rule` at a time
 
 
 
-we will cover some advance topics such as conditional expressions and stack expressions later
+we will cover some advance topics such as `conditional expressions`, `stack expressions`, `error reporting`, and `input modification` later
 
 ## Capabilities
 
