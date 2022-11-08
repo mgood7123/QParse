@@ -14,8 +14,8 @@ otherwise leave `CPP_RULES_USE_QT_FRAMEWORK` undefined to build with `std` (non-
 
 to add support for another framework, see `framework_defines.h`
 
-## capabilities
+## Capabilities
 
 TODO: document all capabilities
 
-look in `Rules.h`, `Conditionals.h` and `Stack.h`
+look in `Rules.h`, `Error.h`, `Conditionals.h`, and `Stack.h`
