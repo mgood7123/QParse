@@ -1,12 +1,6 @@
 #ifndef FRAMEWORK_DEFINES_H
 #define FRAMEWORK_DEFINES_H
 
-// always build with QT
-
-#ifndef CPP_RULES_USE_QT_FRAMEWORK
-#define CPP_RULES_USE_QT_FRAMEWORK
-#endif
-
 #ifdef CPP_RULES_USE_QT_FRAMEWORK
 
 #define CPP_RULES____STRING_INCLUDE <QString>
