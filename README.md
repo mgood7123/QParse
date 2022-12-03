@@ -9,6 +9,54 @@ otherwise leave `CPP_RULES_USE_QT_FRAMEWORK` undefined to build with `std` (non-
 
 to add support for another framework, see `framework_defines.h`
 
+### Example
+```c
+    Iterator it = content;
+
+    auto single_comment = new Rules::Sequence({
+        new Rules::String("//"),
+        new Rules::Optional(new Rules::Char(' ')),
+        new Rules::Until(new Rules::At(new Rules::NewlineOrEOF), [](CPP::Rules::Input i) {
+            std::cout << "comment: " << i.quotedString() << std::endl;
+        }),
+        new Rules::Optional(new Rules::Newline)
+    });
+
+    auto block_comment = new Rules::Sequence({
+        new Rules::String("#COMMENT_BEGIN"),
+        new Rules::Until(new Rules::Sequence({
+            new Rules::Newline(),
+            new Rules::String("#COMMENT_END")}
+        ))
+    }, [](CPP::Rules::Input i) {
+        //std::cout << "block comment: " << i.quotedString() << std::endl;
+    });
+
+    auto line = new Rules::Sequence({
+        new Rules::Until(new Rules::At(new Rules::NewlineOrEOF), [](CPP::Rules::Input i) {
+            std::cout << "line: " << i.quotedString() << std::endl;
+        }),
+        new Rules::Optional(new Rules::Newline)
+    });
+
+    auto empty_line = new Rules::Sequence({
+        new Rules::MatchBUntilA(new Rules::At(new Rules::Newline), new Rules::Or({new Rules::Char(' '), new Rules::Char('\t')})),
+        new Rules::Newline
+    });
+
+    if (!Rules::MatchBUntilA(new Rules::EndOfFile,
+            new Rules::Or({
+                single_comment,
+                block_comment,
+                empty_line,
+                line,
+                new Rules::Error("unexpected token")
+            }
+    )).match(it)) {
+        return -1;
+    }
+```
+
 ## Usage
 
 ### Basic Usage
@@ -87,8 +135,6 @@ all `Rules::` that accept `Rule*` objects must store each `Rule*` object in a `R
 this is done by simply extending `RuleHolder` or by extending `Rule` and then storing each `Rule*` inside a `RuleHolder`
 
 a `RuleHolder` can only contain one `Rule` at a time
-
-
 
 we will cover some advance topics such as `conditional expressions`, `stack expressions`, `error reporting`, and `input modification` later
 
