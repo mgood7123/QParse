@@ -505,6 +505,8 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Sequence::match(Itera
 CPP::Rules::Until::Until(Rule *rule, Action action) : RuleHolder(rule, action) {}
 
 std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Until::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+    return MatchBUntilA(new RuleHolder(rule), new AdvanceInputBy(1), action).match(iterator, undo, doAction);
+    /*
     IteratorMatcher::MatchData match;
     match.begin = iterator.current();
     match.end = iterator.current();
@@ -525,6 +527,7 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Until::match(Iterator
     }
     iterator.setCurrent(match.begin);
     return match;
+    */
 }
 
 CPP::Rules::Range::Range(std::initializer_list<char> letters, Action action) : Rule(action) {
