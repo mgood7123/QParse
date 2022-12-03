@@ -30,7 +30,7 @@
 #define CPP_RULES____STRING std::string
 #define CPP_RULES____CHAR char
 
-#define CPP_RULES____VECTOR_INCLUDE <string>
+#define CPP_RULES____VECTOR_INCLUDE <vector>
 #define CPP_RULES____VECTOR std::vector
 
 #define CPP_RULES____COUT_INCLUDE <iostream>
