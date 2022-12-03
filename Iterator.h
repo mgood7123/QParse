@@ -6,6 +6,7 @@
 #include <functional>
 #include CPP_RULES____STRING_INCLUDE
 #include CPP_RULES____VECTOR_INCLUDE
+#include CPP_RULES____COUT_INCLUDE
 #include <optional>
 #include <stdexcept>
 
