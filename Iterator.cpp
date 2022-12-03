@@ -1,7 +1,7 @@
 #include "Iterator.h"
 
 CPP::Iterator::Iterator(CPP_RULES____STRING * allocated_input) {
-    this->input = input;
+    input = allocated_input;
     allocated = true;
 
     info.iteratorCurrent = this->input->cbegin();
