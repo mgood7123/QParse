@@ -94,7 +94,7 @@ to add support for another framework, see `framework_defines.h`
         new Rules::String("#COMMENT_BEGIN"), new Rules::Newline(),
         new Rules::MatchBUntilA(
             new Rules::Sequence({
-                new Rules::Newline(), new Rules::String("#COMMENT_END"), new Rules::Newline()
+                new Rules::String("#COMMENT_END"), new Rules::Newline()
             }),
             new Rules::Sequence({
                 new Rules::Until(new Rules::At(new Rules::NewlineOrEOF), [&](CPP::Rules::Input i) {
