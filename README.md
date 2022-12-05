@@ -10,6 +10,9 @@ otherwise leave `CPP_RULES_USE_QT_FRAMEWORK` undefined to build with `std` (non-
 to add support for another framework, see `framework_defines.h`
 
 ### Example
+
+#### moderate:
+
 ```c
     Iterator it = content;
 
@@ -55,6 +58,165 @@ to add support for another framework, see `framework_defines.h`
     )).match(it)) {
         return -1;
     }
+```
+
+#### complex
+
+```c
+    std::string a = "../../wl_syscalls.decl";
+    auto content = readFile(a);
+
+    std::string current_syscall, current_arguments, current_argument_count, current_arguments_usages;
+
+    std::vector<std::pair<std::vector<std::string>, std::pair<std::string, std::pair<std::string, std::pair<std::string, std::string>>>>> syscalls;
+    std::vector<std::string> last_comment;
+
+    using namespace CPP;
+
+    Iterator it = content;
+
+    auto space = new Rules::Or({new Rules::Char(' '), new Rules::Char('\t')});
+
+    auto spaces = new Rules::ZeroOrMore(space);
+
+    auto single_comment = new Rules::Sequence({
+        new Rules::String("//"),
+        spaces,
+        new Rules::Sequence({
+            new Rules::Until(new Rules::At(new Rules::NewlineOrEOF), [&](CPP::Rules::Input i) {
+                last_comment.push_back(i.string());
+            }),
+            new Rules::Optional(new Rules::Newline)
+        })
+    });
+
+    auto block_comment = new Rules::Sequence({
+        new Rules::String("#COMMENT_BEGIN"), new Rules::Newline(),
+        new Rules::MatchBUntilA(
+            new Rules::Sequence({
+                new Rules::Newline(), new Rules::String("#COMMENT_END"), new Rules::Newline()
+            }),
+            new Rules::Sequence({
+                new Rules::Until(new Rules::At(new Rules::NewlineOrEOF), [&](CPP::Rules::Input i) {
+                    last_comment.push_back(i.string());
+                }),
+                new Rules::Optional(new Rules::Newline)
+            })
+        )
+    });
+
+    auto ident = new Rules::Range({'a', 'z', 'A', 'Z', '_'});
+
+    auto syscall = new Rules::Sequence({
+        new Rules::ErrorIfNotMatch(ident, "expected ascii identifier or underscore"),
+        new Rules::Optional(new Rules::OneOrMore(new Rules::Range({'a', 'z', 'A', 'Z', '0', '9', '_'})))
+    }, [&](CPP::Rules::Input i) {
+        std::string sl = i.string();
+        std::transform(sl.begin(), sl.end(), sl.begin(), std::tolower);
+        current_syscall = sl;
+    });
+
+    auto arguments = new Rules::Sequence({
+        new Rules::Char('<'),
+        spaces,
+        new Rules::Or({
+            new Rules::Sequence({
+                new Rules::Range({'0', '9'}, [&](Rules::Input i) { current_argument_count = i.string(); }),
+                new Rules::ErrorIfNotMatch(new Rules::Char(','), "expected comma after number of arguments"),
+                spaces,
+                new Rules::ErrorIfNotMatch(new Rules::Sequence({
+                    ident,
+                    new Rules::Until(new Rules::At(new Rules::Sequence({spaces, new Rules::Char('>')})))
+                }, [&](CPP::Rules::Input i) {
+                    current_arguments = i.string();
+                }), "expected argument declarations, followed by closing '>'"),
+                spaces,
+                new Rules::ErrorIfNotMatch(new Rules::Char('>'), "expected closing '>'"),
+                spaces,
+                new Rules::ErrorIfNotMatch(new Rules::Char('<'), "expected opening '<'"),
+                spaces,
+                new Rules::ErrorIfNotMatch(new Rules::Sequence({
+                    ident,
+                    new Rules::Until(new Rules::At(new Rules::Sequence({spaces, new Rules::Char('>')})))
+                }, [&](CPP::Rules::Input i) { current_arguments_usages = i.string(); }), "expected argument usages, followed by closing '>'"),
+            }),
+            new Rules::Optional(new Rules::String("...", [&](CPP::Rules::Input i) { current_arguments = i.string(); }))
+        }),
+        spaces,
+        new Rules::ErrorIfNotMatch(new Rules::Char('>'), "expected closing '>'")
+    });
+
+    auto syscall_line = new Rules::Sequence({
+        new Rules::ErrorIfNotMatch(syscall, "expected syscall"),
+        spaces,
+        new Rules::Optional(arguments),
+        spaces,
+        new Rules::ErrorIfNotMatch(new Rules::Or({
+           new Rules::Optional(single_comment),
+           new Rules::Optional(new Rules::Newline)
+        }), "expected comment or new line or EOF")
+    }, [&](Rules::Input i) {
+        syscalls.push_back({last_comment, {current_syscall, {current_argument_count, {current_arguments, current_arguments_usages}}}});
+        last_comment.clear();
+        last_comment.shrink_to_fit();
+        current_syscall.clear();
+        current_argument_count.clear();
+        current_arguments.clear();
+        current_arguments_usages.clear();
+    });
+
+    auto empty_line = new Rules::Sequence({
+        new Rules::MatchBUntilA(new Rules::At(new Rules::NewlineOrEOF), space),
+        new Rules::Optional(new Rules::Newline)
+    }, [&](CPP::Rules::Input i) {
+        last_comment.clear();
+        last_comment.shrink_to_fit();
+    });
+
+    if (!Rules::MatchBUntilA(new Rules::EndOfFile,
+            new Rules::Or({
+                single_comment,
+                block_comment,
+                empty_line,
+                new Rules::ErrorIfNotMatch(syscall_line, "unexpected token")
+            }
+    )).match(it)) {
+        return -1;
+    }
+```
+parses the following
+```
+// comment 1
+accept4 <3, struct sockaddr *restrict addr, socklen_t *restrict addrlen, int flags> <addr, addrlen, flags>
+
+// comment 2
+// close is expected to clean up and then free the passed object
+close <>
+
+// comment 3
+dupfd <>
+
+// comment 4
+read <...>
+
+// comment 5
+set_exec_or_close
+
+// comment 6
+write
+
+
+#COMMENT_BEGIN
+
+block comment
+
+ a syscall defines a function that accepts an opaque object
+   followed by zero or more arguments
+
+ an object registers itself at runtime by specifying syscalls
+  it wants to be part of, followed by a callback for each specified syscall
+
+#COMMENT_END
 ```
 
 ## Usage
