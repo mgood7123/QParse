@@ -121,7 +121,20 @@ to add support for another framework, see `framework_defines.h`
         spaces,
         new Rules::Or({
             new Rules::Sequence({
-                new Rules::Range({'0', '9'}, [&](Rules::Input i) { current_argument_count = i.string(); }),
+                new Rules::NotAt(
+                    new Rules::Or({
+                        new Rules::Sequence({
+                            new Rules::Char('>'),
+                            spaces,
+                            new Rules::Or({
+                                single_comment,
+                                new Rules::Newline()
+                            })
+                        }),
+                        new Rules::String("...")
+                    })
+                ),
+                new Rules::ErrorIfNotMatch(new Rules::OneOrMore(new Rules::Range({'0', '9'}), [&](Rules::Input i) { current_argument_count = i.string(); }), "expected an integer"),
                 new Rules::ErrorIfNotMatch(new Rules::Char(','), "expected comma after number of arguments"),
                 spaces,
                 new Rules::ErrorIfNotMatch(new Rules::Sequence({
@@ -154,7 +167,7 @@ to add support for another framework, see `framework_defines.h`
         new Rules::ErrorIfNotMatch(new Rules::Or({
            new Rules::Optional(single_comment),
            new Rules::Optional(new Rules::Newline)
-        }), "expected comment or new line or EOF")
+        }), "expected comment or new line")
     }, [&](Rules::Input i) {
         syscalls.push_back({last_comment, {current_syscall, {current_argument_count, {current_arguments, current_arguments_usages}}}});
         last_comment.clear();
@@ -173,50 +186,75 @@ to add support for another framework, see `framework_defines.h`
         last_comment.shrink_to_fit();
     });
 
-    if (!Rules::MatchBUntilA(new Rules::EndOfFile,
+    if (!Rules::MatchBUntilA(
+        new Rules::EndOfFile,
+        new Rules::ErrorIfNotMatch(
             new Rules::Or({
                 single_comment,
                 block_comment,
                 empty_line,
                 new Rules::ErrorIfNotMatch(syscall_line, "unexpected token")
-            }
-    )).match(it)) {
+            }),
+            "expected a comment, empty line, or a syscall decleration"
+        )
+    ).match(it)) {
+        printf("failed to parse syscalls.decl\n");
         return -1;
+    }
+
+    if (syscalls.empty()) {
+        printf("no syscalls specified in syscalls.decl\n");
+        return 0;
     }
 ```
 parses the following
 ```
-// comment 1
-accept4 <3, struct sockaddr *restrict addr, socklen_t *restrict addrlen, int flags> <addr, addrlen, flags>
+// syscall.decl
+//
+//      file format:
+//                    // comment, this can < contain anything % at @ all !
+//
+//                    #COMMENT_BEGIN
+//                    this is a block comment
+//                        this can < contain anything % at @ all !
+//                    #COMMENT_END
+//
+//                    // syscall documentation goes directly above syscall
+//                    // this can be
+//                    // multiple comments
+//                    #COMMENT_BEGIN
+//                          or multiple
+//                    #COMMENT_END
+//                    #COMMENT_BEGIN
+//                          block comments
+//                    #COMMENT_END
+//                    // or both
+//                    syscall                                              // zero arguments                    example: foo  
+//                    syscall <>                                           // zero arguments                    example: foo  <>
+//                    syscall <argc, arg declaration> <argument usage>     // argc arguments,                   example: foo  <2, int foo, float bar> <foo, bar>
+//                    syscall <...>                                        // up to 125 arguments of any type   example: foo  <...>
 
-// comment 2
-// close is expected to clean up and then free the passed object
-close <>
-
-// comment 3
-dupfd <>
-
-// comment 4
-read <...>
-
-// comment 5
-set_exec_or_close
-
-// comment 6
-write
-
+// comment, this can < contain anything % at @ all !
 
 #COMMENT_BEGIN
-
-block comment
-
- a syscall defines a function that accepts an opaque object
-   followed by zero or more arguments
-
- an object registers itself at runtime by specifying syscalls
-  it wants to be part of, followed by a callback for each specified syscall
-
+this is a block comment
+    this can < contain anything % at @ all !
 #COMMENT_END
+
+// syscall documentation goes directly above syscall
+// this can be
+// multiple comments
+#COMMENT_BEGIN
+      or multiple
+#COMMENT_END
+#COMMENT_BEGIN
+      block comments
+#COMMENT_END
+// or both
+syscall                                               // zero arguments                    example: foo  
+syscall2 <>                                           // zero arguments                    example: foo  <>
+syscall3 <1532, arg declaration> <argument usage>     // argc arguments,                   example: foo  <2, int foo, float bar> <foo, bar>
+syscall4 <...>                                        // up to 125 arguments of any type   example: foo  <...>
 ```
 
 ## Usage
