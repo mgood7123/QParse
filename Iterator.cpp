@@ -137,13 +137,13 @@ CPP_RULES____STRING::const_iterator CPP::Iterator::current() const {
 
 void CPP::Iterator::setCurrent(CPP_RULES____STRING::const_iterator current) {
     if (current < info.iteratorCurrent) {
-        while(current < info.iteratorCurrent) {
+        while(current < info.iteratorCurrent && has_previous()) {
             previous();
         }
         compute_line_start();
     }
     if (current > info.iteratorCurrent) {
-        while(current > info.iteratorCurrent) {
+        while(current > info.iteratorCurrent && has_next()) {
             next();
         }
         compute_line_end();
