@@ -229,7 +229,7 @@ parses the following
 //                          block comments
 //                    #COMMENT_END
 //                    // or both
-//                    syscall                                              // zero arguments                    example: foo  
+//                    syscall                                              // you can even put documentation here!  zero arguments                    example: foo  
 //                    syscall <>                                           // zero arguments                    example: foo  <>
 //                    syscall <argc, arg declaration> <argument usage>     // argc arguments,                   example: foo  <2, int foo, float bar> <foo, bar>
 //                    syscall <...>                                        // up to 125 arguments of any type   example: foo  <...>
@@ -251,7 +251,7 @@ this is a block comment
       block comments
 #COMMENT_END
 // or both
-syscall                                               // zero arguments                    example: foo  
+syscall                                               // you can even put documentation here!  zero arguments                    example: foo  
 syscall2 <>                                           // zero arguments                    example: foo  <>
 syscall3 <1532, arg declaration> <argument usage>     // argc arguments,                   example: foo  <2, int foo, float bar> <foo, bar>
 syscall4 <...>                                        // up to 125 arguments of any type   example: foo  <...>
