@@ -66,10 +66,16 @@ to add support for another framework, see `framework_defines.h`
     std::string a = "../../wl_syscalls.decl";
     auto content = readFile(a);
 
-    std::string current_syscall, current_arguments, current_argument_count, current_arguments_usages;
+    typedef struct Info {
+        bool is_typedef;
+        std::vector<std::string> comment;
+        std::string current_typedef, current_syscall, current_arguments, current_argument_count, current_arguments_usages;
+    } Info;
 
-    std::vector<std::pair<std::vector<std::string>, std::pair<std::string, std::pair<std::string, std::pair<std::string, std::string>>>>> syscalls;
-    std::vector<std::string> last_comment;
+    Info info;
+    info.is_typedef = false;
+
+    std::vector<Info> syscalls;
 
     using namespace CPP;
 
@@ -84,7 +90,7 @@ to add support for another framework, see `framework_defines.h`
         spaces,
         new Rules::Sequence({
             new Rules::Until(new Rules::At(new Rules::NewlineOrEOF), [&](CPP::Rules::Input i) {
-                last_comment.push_back(i.string());
+                info.comment.push_back(i.string());
             }),
             new Rules::Optional(new Rules::Newline)
         })
@@ -98,7 +104,7 @@ to add support for another framework, see `framework_defines.h`
             }),
             new Rules::Sequence({
                 new Rules::Until(new Rules::At(new Rules::NewlineOrEOF), [&](CPP::Rules::Input i) {
-                    last_comment.push_back(i.string());
+                    info.comment.push_back(i.string());
                 }),
                 new Rules::Optional(new Rules::Newline)
             })
@@ -113,7 +119,12 @@ to add support for another framework, see `framework_defines.h`
     }, [&](CPP::Rules::Input i) {
         std::string sl = i.string();
         std::transform(sl.begin(), sl.end(), sl.begin(), std::tolower);
-        current_syscall = sl;
+        if (!info.is_typedef) {
+            info.current_syscall = sl;
+        } else {
+            info.current_typedef = sl;
+            info.is_typedef = false;
+        }
     });
 
     auto arguments = new Rules::Sequence({
@@ -134,14 +145,14 @@ to add support for another framework, see `framework_defines.h`
                         new Rules::String("...")
                     })
                 ),
-                new Rules::ErrorIfNotMatch(new Rules::OneOrMore(new Rules::Range({'0', '9'}), [&](Rules::Input i) { current_argument_count = i.string(); }), "expected an integer"),
+                new Rules::ErrorIfNotMatch(new Rules::OneOrMore(new Rules::Range({'0', '9'}), [&](Rules::Input i) { info.current_argument_count = i.string(); }), "expected an integer"),
                 new Rules::ErrorIfNotMatch(new Rules::Char(','), "expected comma after number of arguments"),
                 spaces,
                 new Rules::ErrorIfNotMatch(new Rules::Sequence({
                     ident,
                     new Rules::Until(new Rules::At(new Rules::Sequence({spaces, new Rules::Char('>')})))
                 }, [&](CPP::Rules::Input i) {
-                    current_arguments = i.string();
+                    info.current_arguments = i.string();
                 }), "expected argument declarations, followed by closing '>'"),
                 spaces,
                 new Rules::ErrorIfNotMatch(new Rules::Char('>'), "expected closing '>'"),
@@ -149,41 +160,83 @@ to add support for another framework, see `framework_defines.h`
                 new Rules::ErrorIfNotMatch(new Rules::Char('<'), "expected opening '<'"),
                 spaces,
                 new Rules::ErrorIfNotMatch(new Rules::Sequence({
+                    new Rules::Optional(new Rules::Char('&')),
                     ident,
                     new Rules::Until(new Rules::At(new Rules::Sequence({spaces, new Rules::Char('>')})))
-                }, [&](CPP::Rules::Input i) { current_arguments_usages = i.string(); }), "expected argument usages, followed by closing '>'"),
+                }, [&](CPP::Rules::Input i) { info.current_arguments_usages = i.string(); }), "expected argument usages, followed by closing '>'"),
             }),
-            new Rules::Optional(new Rules::String("...", [&](CPP::Rules::Input i) { current_arguments = i.string(); }))
+            new Rules::If(
+                [&]() { return info.current_typedef.length() != 0; },
+                new Rules::ErrorIfMatch(
+                    new Rules::At(new Rules::String("..."))
+                    , "typedef declaration does not support varadic arguments (...)"
+                ),
+                new Rules::Optional(
+                    new Rules::String("...", [&](CPP::Rules::Input i) { info.current_arguments = i.string(); })
+                )
+            )
         }),
         spaces,
         new Rules::ErrorIfNotMatch(new Rules::Char('>'), "expected closing '>'")
     });
 
+    auto syscall_line_end = new Rules::Or({
+        single_comment,
+        new Rules::Newline,
+        new Rules::At(new Rules::EndOfFile)
+    });
+
     auto syscall_line = new Rules::Sequence({
-        new Rules::ErrorIfNotMatch(syscall, "expected syscall"),
+        syscall,
         spaces,
         new Rules::Optional(arguments),
         spaces,
-        new Rules::ErrorIfNotMatch(new Rules::Or({
-           new Rules::Optional(single_comment),
-           new Rules::Optional(new Rules::Newline)
-        }), "expected comment or new line")
+        syscall_line_end,
+    });
+
+    auto syscall_line__or__typedef_syscall_line = new Rules::Or({
+        new Rules::Sequence({
+            new Rules::At(new Rules::Sequence({
+                syscall, spaces,
+                new Rules::Or({
+                    new Rules::Optional(new Rules::Char('<')),
+                    syscall_line_end
+                })
+            })),
+            syscall_line
+        }),
+        new Rules::Sequence({
+            new Rules::At(new Rules::Sequence({
+                new Rules::String("typedef"), spaces, syscall, spaces,
+                new Rules::Or({
+                    new Rules::Optional(new Rules::Char('<')),
+                    syscall_line_end
+                })
+            })),
+            new Rules::String("typedef", [&](CPP::Rules::Input i) { info.is_typedef = true; }),
+            spaces,
+            new Rules::ErrorIfNotMatch(syscall, "expected syscall"),
+            spaces,
+            syscall_line
+        }),
     }, [&](Rules::Input i) {
-        syscalls.push_back({last_comment, {current_syscall, {current_argument_count, {current_arguments, current_arguments_usages}}}});
-        last_comment.clear();
-        last_comment.shrink_to_fit();
-        current_syscall.clear();
-        current_argument_count.clear();
-        current_arguments.clear();
-        current_arguments_usages.clear();
+        syscalls.push_back(info);
+        info.is_typedef = false;
+        info.current_typedef.clear();
+        info.comment.clear();
+        info.comment.shrink_to_fit();
+        info.current_syscall.clear();
+        info.current_argument_count.clear();
+        info.current_arguments.clear();
+        info.current_arguments_usages.clear();
     });
 
     auto empty_line = new Rules::Sequence({
         new Rules::MatchBUntilA(new Rules::At(new Rules::NewlineOrEOF), space),
         new Rules::Optional(new Rules::Newline)
     }, [&](CPP::Rules::Input i) {
-        last_comment.clear();
-        last_comment.shrink_to_fit();
+        info.comment.clear();
+        info.comment.shrink_to_fit();
     });
 
     if (!Rules::MatchBUntilA(
@@ -193,9 +246,9 @@ to add support for another framework, see `framework_defines.h`
                 single_comment,
                 block_comment,
                 empty_line,
-                new Rules::ErrorIfNotMatch(syscall_line, "unexpected token")
+                syscall_line__or__typedef_syscall_line,
             }),
-            "expected a comment, empty line, or a syscall decleration"
+            "expected a comment, empty line, typedef syscall, or a syscall declaration"
         )
     ).match(it)) {
         printf("failed to parse syscalls.decl\n");
@@ -211,50 +264,42 @@ parses the following
 ```
 // syscall.decl
 //
-//      file format:
-//                    // comment, this can < contain anything % at @ all !
+//     file format:
+//         // comment, this can < contain anything % at @ all !
 //
-//                    #COMMENT_BEGIN
-//                    this is a block comment
-//                        this can < contain anything % at @ all !
-//                    #COMMENT_END
+//         #COMMENT_BEGIN
+//         this is a block comment
+//             this can < contain anything % at @ all !
+//         #COMMENT_END
 //
-//                    // syscall documentation goes directly above syscall
-//                    // this can be
-//                    // multiple comments
-//                    #COMMENT_BEGIN
-//                          or multiple
-//                    #COMMENT_END
-//                    #COMMENT_BEGIN
-//                          block comments
-//                    #COMMENT_END
-//                    // or both
-//                    syscall                                              // you can even put documentation here!  zero arguments                    example: foo  
-//                    syscall <>                                           // zero arguments                    example: foo  <>
-//                    syscall <argc, arg declaration> <argument usage>     // argc arguments,                   example: foo  <2, int foo, float bar> <foo, bar>
-//                    syscall <...>                                        // up to 125 arguments of any type   example: foo  <...>
-
-// comment, this can < contain anything % at @ all !
-
-#COMMENT_BEGIN
-this is a block comment
-    this can < contain anything % at @ all !
-#COMMENT_END
-
-// syscall documentation goes directly above syscall
-// this can be
-// multiple comments
-#COMMENT_BEGIN
-      or multiple
-#COMMENT_END
-#COMMENT_BEGIN
-      block comments
-#COMMENT_END
-// or both
-syscall                                               // you can even put documentation here!  zero arguments                    example: foo  
-syscall2 <>                                           // zero arguments                    example: foo  <>
-syscall3 <1532, arg declaration> <argument usage>     // argc arguments,                   example: foo  <2, int foo, float bar> <foo, bar>
-syscall4 <...>                                        // up to 125 arguments of any type   example: foo  <...>
+//         // syscall documentation goes directly above syscall
+//         // this can be
+//         // multiple comments
+//         #COMMENT_BEGIN
+//               or multiple
+//         #COMMENT_END
+//         #COMMENT_BEGIN
+//               block comments
+//         #COMMENT_END
+//         // or both
+//         syscall                                                              // you can even put documentation here!  zero arguments example: foo  
+//         syscall <>                                                           // zero arguments                                       example: foo  <>
+//         syscall <argc, arg declaration> <argument usage>                     // argc arguments,                                      example: foo  <2, int foo, float bar> <foo, bar>
+//         syscall <...>                                                        // up to 125 arguments of any type                      example: foo  <...>
+//
+//         // syscalls can also be typedef'd
+//         //
+//         // a typedef is like a mapping that maps the input of syscall A to the input of syscall B
+//
+//         // can map to any syscall that can accept specified argument types
+//         //   eg, struct IO arg -> int, int*
+//         //   eg, struct IO arg -> arg.input, &arg.outputInt   // passing arg.input would produce a compile error since it expects int* but we passed int
+//         
+//         //   eg, struct IO arg -> int, float*
+//         //   eg, struct IO arg -> arg.input, &arg.outputFloat // passing arg.outputInt or arg.input would produce a compile error since it expects float* but we passed int or int*
+//         //
+//         typedef syscall_from syscall_to <argc, arg declaration> <argument usage>   // typedef argc arguments,                              example: typedef foo foo1  <2, foobar f> <f.foo, f.bar>
+//         typedef syscall_from syscall_to <...>                                      // NOT SUPPORTED !!!    IT IS IMPOSSIBLE TO RELIABLE TYPEDEF A VARADIC ARGUMENT !
 ```
 
 ## Usage
