@@ -162,7 +162,12 @@ to add support for another framework, see `framework_defines.h`
                 new Rules::ErrorIfNotMatch(new Rules::Sequence({
                     new Rules::Optional(new Rules::Char('&')),
                     ident,
-                    new Rules::Until(new Rules::At(new Rules::Sequence({spaces, new Rules::Char('>')})))
+                    new Rules::Until(
+                        new Rules::Sequence({
+                            new Rules::At(new Rules::Sequence({spaces, new Rules::NotAt(new Rules::String("->")), new Rules::Any, new Rules::Char('>')})),
+                            new Rules::Any
+                        })
+                    ),
                 }, [&](CPP::Rules::Input i) { info.current_arguments_usages = i.string(); }), "expected argument usages, followed by closing '>'"),
             }),
             new Rules::If(
@@ -289,7 +294,7 @@ parses the following
 //
 //         // syscalls can also be typedef'd
 //         //
-//         // a typedef is like a mapping that maps the input of syscall A to the input of syscall B
+//         // a typedef is like a mapping that maps the input of syscall_to to the input of syscall_from
 //
 //         // can map to any syscall that can accept specified argument types
 //         //   eg, struct IO arg -> int, int*
