@@ -332,9 +332,9 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::LogCapture::match(Ite
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
     if (match) {
-        CPP_RULES____COUT << "rule '" << ruleName << "' captured " << Input(iterator, match, undo, 0).quotedString() CPP_RULES____COUT_ENDL;
+        CPP_RULES____COUT << "rule '" << ruleName << "' captured " << Input(iterator, match, undo, 0).quotedString() <<"\n" CPP_RULES____COUT_ENDL;
     } else {
-        CPP_RULES____COUT << "rule '" << ruleName << "' did not capture anything because it did not match" CPP_RULES____COUT_ENDL;
+        CPP_RULES____COUT << "rule '" << ruleName << "' did not capture anything because it did not match" <<"\n" CPP_RULES____COUT_ENDL;
     }
     if (doAction) action(Input(iterator, match, undo, match.matches));
     return match;
@@ -347,6 +347,29 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::LogInput::match(Itera
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
     CPP_RULES____COUT << "input after rule '" << ruleName << "' : " << iterator.currentString() CPP_RULES____COUT_ENDL;
+    if (doAction) action(Input(iterator, match, undo, match.matches));
+    return match;
+}
+
+CPP::Rules::LogTrace::LogTrace(Rule *rule, const CPP_RULES____STRING &ruleName, Action action) : ruleName(ruleName), RuleHolder(rule, action) {}
+
+std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::LogTrace::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+    auto match_ = rule->match(iterator, undo, doAction);
+    if (!match_.has_value()) return std::nullopt;
+    auto match = *match_;
+    CPP_RULES____COUT << "rule: " << ruleName CPP_RULES____COUT_ENDL;
+    CPP_RULES____COUT << "    match: " << (match ? "true" : "false") CPP_RULES____COUT_ENDL;
+    if (match) {
+        CPP_RULES____COUT << "    capture: " << Input(iterator, match, undo, 0).quotedString() CPP_RULES____COUT_ENDL;
+    }
+    CPP_RULES____COUT << "    input line: " CPP_RULES____COUT_ENDL;
+    undo->print_error(iterator, "    ");
+    undo->print([&](auto description) {
+        CPP_RULES____COUT_NO_SPACE << description CPP_RULES____COUT_ENDL;
+        undo->undo();
+        undo->print_error(iterator, "    ");
+    });
+    while(undo->redo()) {};
     if (doAction) action(Input(iterator, match, undo, match.matches));
     return match;
 }
