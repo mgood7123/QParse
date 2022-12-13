@@ -110,13 +110,19 @@ to add support for another framework, see `framework_defines.h`
             })
         )
     });
-
+    
     auto ident = new Rules::Range({'a', 'z', 'A', 'Z', '_'});
 
-    auto syscall = new Rules::Sequence({
-        new Rules::ErrorIfNotMatch(ident, "expected ascii identifier or underscore"),
+    auto c_ident = Rules_NS_LogTrace1(new Rules::Sequence({
+        new Rules::Range({'a', 'z', 'A', 'Z', '_'}),
         new Rules::Optional(new Rules::OneOrMore(new Rules::Range({'a', 'z', 'A', 'Z', '0', '9', '_'})))
-    }, [&](CPP::Rules::Input i) {
+    }), "c_ident");
+
+    auto number = Rules_NS_LogTrace1(new Rules::OneOrMore(new Rules::Range({'0', '9'})), "number");
+
+    auto c_value = Rules_NS_LogTrace1(new Rules::Or({c_ident, number}), "c_value");
+
+    auto syscall = new Rules::TemporaryAction(c_ident, [&](CPP::Rules::Input i) {
         std::string sl = i.string();
         std::transform(sl.begin(), sl.end(), sl.begin(), std::tolower);
         if (!info.is_typedef) {
@@ -131,8 +137,8 @@ to add support for another framework, see `framework_defines.h`
         new Rules::Char('<'),
         spaces,
         new Rules::Or({
-            new Rules::Sequence({
-                new Rules::NotAt(
+            Rules_NS_LogTrace1(new Rules::Sequence({
+                Rules_NS_LogTrace(new Rules::NotAt(
                     new Rules::Or({
                         new Rules::Sequence({
                             new Rules::Char('>'),
@@ -144,16 +150,16 @@ to add support for another framework, see `framework_defines.h`
                         }),
                         new Rules::String("...")
                     })
-                ),
-                new Rules::ErrorIfNotMatch(new Rules::OneOrMore(new Rules::Range({'0', '9'}), [&](Rules::Input i) { info.current_argument_count = i.string(); }), "expected an integer"),
+                )),
+                new Rules::ErrorIfNotMatch(new Rules::TemporaryAction(number, [&](Rules::Input i) { info.current_argument_count = i.string(); }), "expected an integer"),
                 new Rules::ErrorIfNotMatch(new Rules::Char(','), "expected comma after number of arguments"),
                 spaces,
-                new Rules::ErrorIfNotMatch(new Rules::Sequence({
+                Rules_NS_LogTrace1(new Rules::ErrorIfNotMatch(new Rules::Sequence({
                     ident,
                     new Rules::Until(new Rules::At(new Rules::Sequence({spaces, new Rules::Char('>')})))
                 }, [&](CPP::Rules::Input i) {
                     info.current_arguments = i.string();
-                }), "expected argument declarations, followed by closing '>'"),
+                }), "expected argument declarations, followed by closing '>'"), "argument declaration"),
                 spaces,
                 new Rules::ErrorIfNotMatch(new Rules::Char('>'), "expected closing '>'"),
                 spaces,
@@ -161,16 +167,21 @@ to add support for another framework, see `framework_defines.h`
                 spaces,
                 new Rules::ErrorIfNotMatch(new Rules::Sequence({
                     new Rules::Optional(new Rules::Char('&')),
-                    ident,
-                    new Rules::Until(
-                        new Rules::Sequence({
-                            new Rules::At(new Rules::Sequence({spaces, new Rules::NotAt(new Rules::String("->")), new Rules::Any, new Rules::Char('>')})),
+                    c_value,
+                    // we cannot use an Until rule here since we need to skip '->' if it occurs
+                    Rules_NS_LogTrace1(new Rules::MatchBUntilA(
+                        Rules_NS_LogTrace1(new Rules::At(new Rules::Char('>')), "at >"),
+                        new Rules::Or({
+                            new Rules::Sequence({
+                                new Rules::At(new Rules::String("->")),
+                                Rules_NS_LogTrace1(new Rules::String("->"), "ignore ->")
+                            }),
                             new Rules::Any
                         })
-                    ),
+                    ), "argument usages"),
                 }, [&](CPP::Rules::Input i) { info.current_arguments_usages = i.string(); }), "expected argument usages, followed by closing '>'"),
-            }),
-            new Rules::If(
+            }), "numbered arguments"),
+            Rules_NS_LogTrace1(new Rules::If(
                 [&]() { return info.current_typedef.length() != 0; },
                 new Rules::ErrorIfMatch(
                     new Rules::At(new Rules::String("..."))
@@ -179,7 +190,7 @@ to add support for another framework, see `framework_defines.h`
                 new Rules::Optional(
                     new Rules::String("...", [&](CPP::Rules::Input i) { info.current_arguments = i.string(); })
                 )
-            )
+            ), "any number of arguments")
         }),
         spaces,
         new Rules::ErrorIfNotMatch(new Rules::Char('>'), "expected closing '>'")
@@ -194,7 +205,7 @@ to add support for another framework, see `framework_defines.h`
     auto syscall_line = new Rules::Sequence({
         syscall,
         spaces,
-        new Rules::Optional(arguments),
+        new Rules::Optional(Rules_NS_LogTrace(arguments)),
         spaces,
         syscall_line_end,
     });
@@ -202,20 +213,23 @@ to add support for another framework, see `framework_defines.h`
     auto syscall_line__or__typedef_syscall_line = new Rules::Or({
         new Rules::Sequence({
             new Rules::At(new Rules::Sequence({
-                syscall, spaces,
+                Rules_NS_LogTrace1(syscall, "at syscall"), spaces,
                 new Rules::Or({
-                    new Rules::Optional(new Rules::Char('<')),
-                    syscall_line_end
+                    Rules_NS_LogTrace1(new Rules::Char('<'), "at <"),
+                    Rules_NS_LogTrace1(syscall_line_end, "at syscall line end")
                 })
             })),
             syscall_line
         }),
         new Rules::Sequence({
             new Rules::At(new Rules::Sequence({
-                new Rules::String("typedef"), spaces, syscall, spaces,
+                Rules_NS_LogTrace1(new Rules::String("typedef"), "at typedef"),
+                spaces,
+                Rules_NS_LogTrace1(syscall, "at syscall"), spaces,
+                Rules_NS_LogTrace1(syscall, "at syscall"), spaces,
                 new Rules::Or({
-                    new Rules::Optional(new Rules::Char('<')),
-                    syscall_line_end
+                    Rules_NS_LogTrace1(new Rules::Char('<'), "at <"),
+                    Rules_NS_LogTrace1(syscall_line_end, "at syscall line end")
                 })
             })),
             new Rules::String("typedef", [&](CPP::Rules::Input i) { info.is_typedef = true; }),
@@ -251,7 +265,7 @@ to add support for another framework, see `framework_defines.h`
                 single_comment,
                 block_comment,
                 empty_line,
-                syscall_line__or__typedef_syscall_line,
+                Rules_NS_LogTrace(syscall_line__or__typedef_syscall_line),
             }),
             "expected a comment, empty line, typedef syscall, or a syscall declaration"
         )
