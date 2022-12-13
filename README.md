@@ -111,8 +111,6 @@ to add support for another framework, see `framework_defines.h`
         )
     });
     
-    auto ident = new Rules::Range({'a', 'z', 'A', 'Z', '_'});
-
     auto c_ident = Rules_NS_LogTrace1(new Rules::Sequence({
         new Rules::Range({'a', 'z', 'A', 'Z', '_'}),
         new Rules::Optional(new Rules::OneOrMore(new Rules::Range({'a', 'z', 'A', 'Z', '0', '9', '_'})))
@@ -155,7 +153,7 @@ to add support for another framework, see `framework_defines.h`
                 new Rules::ErrorIfNotMatch(new Rules::Char(','), "expected comma after number of arguments"),
                 spaces,
                 Rules_NS_LogTrace1(new Rules::ErrorIfNotMatch(new Rules::Sequence({
-                    ident,
+                    c_ident,
                     new Rules::Until(new Rules::At(new Rules::Sequence({spaces, new Rules::Char('>')})))
                 }, [&](CPP::Rules::Input i) {
                     info.current_arguments = i.string();
