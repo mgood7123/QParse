@@ -70,6 +70,28 @@
 
 
 
+#define CPP_Rules_LogTrace1(rule, custom_name) new CPP::Rules::LogTrace(rule, custom_name)
+#define CPP_Rules_LogTrace(rule) CPP_Rules_LogTrace1(rule, #rule)
+#define Rules_NS_LogTrace1(rule, custom_name) new Rules::LogTrace(rule, custom_name)
+#define Rules_NS_LogTrace(rule) Rules_NS_LogTrace1(rule, #rule)
+
+#define CPP_Rules_LogTrace1_A(rule, custom_name, action) new CPP::Rules::LogTrace(rule, custom_name, action)
+#define CPP_Rules_LogTrace_A(rule, action) CPP_Rules_LogTrace1(rule, #rule, action)
+#define Rules_NS_LogTrace1_A(rule, custom_name, action) new Rules::LogTrace(rule, custom_name, action)
+#define Rules_NS_LogTrace_A(rule, action) Rules_NS_LogTrace1(rule, #rule, action)
+
+#define CPP_Rules_LogTrace1_NO_ALLOC(rule, custom_name) CPP::Rules::LogTrace(rule, custom_name)
+#define CPP_Rules_LogTrace_NO_ALLOC(rule) CPP_Rules_LogTrace1_NO_ALLOC(rule, #rule)
+#define Rules_NS_LogTrace1_NO_ALLOC(rule, custom_name) Rules::LogTrace(rule, custom_name)
+#define Rules_NS_LogTrace_NO_ALLOC(rule) Rules_NS_LogTrace1_NO_ALLOC(rule, #rule)
+
+#define CPP_Rules_LogTrace1_A_NO_ALLOC(rule, custom_name, action) CPP::Rules::LogTrace(rule, custom_name, action)
+#define CPP_Rules_LogTrace_A_NO_ALLOC(rule, action) CPP_Rules_LogTrace1_NO_ALLOC(rule, #rule, action)
+#define Rules_NS_LogTrace1_A_NO_ALLOC(rule, custom_name, action) Rules::LogTrace(rule, custom_name, action)
+#define Rules_NS_LogTrace_A_NO_ALLOC(rule, action) Rules_NS_LogTrace1_NO_ALLOC(rule, #rule, action)
+
+
+
 namespace CPP {
     namespace Rules {
         using Action = std::function<void(Input input)>;
@@ -261,6 +283,20 @@ namespace CPP {
             CPP_RULES____STRING ruleName;
         public:
             LogInput(Rule *rule, const CPP_RULES____STRING & ruleName, Action action = NO_ACTION);
+
+            using Rule::match;
+
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+
+        };
+
+        class LogTrace : public RuleHolder {
+#ifdef GTEST_API_
+            public:
+#endif
+            CPP_RULES____STRING ruleName;
+        public:
+            LogTrace(Rule *rule, const CPP_RULES____STRING & ruleName, Action action = NO_ACTION);
 
             using Rule::match;
 
