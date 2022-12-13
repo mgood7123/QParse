@@ -121,6 +121,7 @@ namespace CPP {
             void print(Printer printer);
             bool undo();
             bool redo();
+            void print_error(Iterator & iterator, const char * indent = "");
         };
     }
 }
