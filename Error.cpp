@@ -1,27 +1,27 @@
 #include "Rules.h"
 #include CPP_RULES____COUT_INCLUDE
 
-void print_error(CPP::Iterator & iterator) {
-    CPP_RULES____COUT_NO_SPACE << "  at source:" << iterator.line() << ":" << iterator.column() << " (index " << iterator.currentPosition() << ") :" CPP_RULES____COUT_ENDL;
-    CPP_RULES____COUT_NO_SPACE_NO_QUOTE << "    input: \"" << iterator.lineString() << "\"" CPP_RULES____COUT_ENDL;
+void CPP::Rules::UndoRedo::print_error(Iterator & iterator, const char * indent) {
+    CPP_RULES____COUT_NO_SPACE << indent << "  at source:" << iterator.line() << ":" << iterator.column() << " (index " << iterator.currentPosition() << ") :" CPP_RULES____COUT_ENDL;
+    CPP_RULES____COUT_NO_SPACE_NO_QUOTE << indent << "    input: \"" << iterator.lineString() << "\"" CPP_RULES____COUT_ENDL;
 
     CPP_RULES____STRING pre = "           ";
     CPP_RULES____STRING_APPEND(spacing, " ", iterator.column());
     CPP_RULES____STRING cursor = spacing + "^";
     CPP_RULES____STRING full_cursor = pre + spacing + "^";
 
-    CPP_RULES____COUT_NO_SPACE_NO_QUOTE << full_cursor CPP_RULES____COUT_ENDL;
+    CPP_RULES____COUT_NO_SPACE_NO_QUOTE << indent << full_cursor CPP_RULES____COUT_ENDL;
     CPP_RULES____COUT_NO_SPACE << "" CPP_RULES____COUT_ENDL;
 }
 
 void CPP::Rules::printError(const CPP_RULES____STRING & message, Iterator & iterator, UndoRedo & undo)
 {
     CPP_RULES____COUT_NO_SPACE << "ERROR: " << message CPP_RULES____COUT_ENDL;
-    print_error(iterator);
+    undo.print_error(iterator);
     undo.print([&](auto description) {
         CPP_RULES____COUT_NO_SPACE << description CPP_RULES____COUT_ENDL;
         undo.undo();
-        print_error(iterator);
+        undo.print_error(iterator);
     });
 }
 
