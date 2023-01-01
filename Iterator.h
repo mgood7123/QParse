@@ -64,6 +64,8 @@ namespace CPP {
     public:
         CPP_RULES____STRING *input;
 
+        bool enable_logging;
+
         Iterator(CPP_RULES____STRING &input);
         Iterator(const char * input);
         ~Iterator();
