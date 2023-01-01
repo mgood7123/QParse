@@ -70,9 +70,9 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Success::match(Iterat
     return match;
 }
 
-CPP::Rules::AdvanceInputBy::AdvanceInputBy(Action action) : n(1), Rule(action) {}
+CPP::Rules::AdvanceInputBy::AdvanceInputBy(Action action) : Rule(action), n(1) {}
 
-CPP::Rules::AdvanceInputBy::AdvanceInputBy(int n, Action action) : n(n < 0 ? 0 : n), Rule(action) {}
+CPP::Rules::AdvanceInputBy::AdvanceInputBy(int n, Action action) : Rule(action), n(n < 0 ? 0 : n) {}
 
 std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::AdvanceInputBy::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     IteratorMatcher::MatchData match;
@@ -107,7 +107,7 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Any::match(Iterator &
     return match;
 }
 
-CPP::Rules::Char::Char(char character, Action action) : character(character), Rule(action) {}
+CPP::Rules::Char::Char(char character, Action action) : Rule(action), character(character) {}
 
 std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Char::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match = IteratorMatcher::match(iterator, character);
@@ -167,7 +167,7 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Newline::match(Iterat
     return match;
 }
 
-CPP::Rules::String::String(const CPP_RULES____STRING &string, Action action) : string(string), Rule(action) {}
+CPP::Rules::String::String(const CPP_RULES____STRING &string, Action action) : Rule(action), string(string) {}
 
 std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::String::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match = IteratorMatcher::match(iterator, string);
@@ -309,67 +309,71 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::LogCurrentCharacter::
     iterator.pushInfo();
     match.matches++;
     match.end = iterator.current();
-    CPP_RULES____COUT << "current character: " << Input::quote(iterator.peekNext()) CPP_RULES____COUT_ENDL;
+    if (iterator.enable_logging) CPP_RULES____COUT << "current character: " << Input::quote(iterator.peekNext()) CPP_RULES____COUT_ENDL;
     if (doAction) action(Input(iterator, match, undo, match.matches));
     return match;
 }
 
-CPP::Rules::LogMatchStatus::LogMatchStatus(Rule *rule, const CPP_RULES____STRING &ruleName, Action action) : ruleName(ruleName), RuleHolder(rule, action) {}
+CPP::Rules::LogMatchStatus::LogMatchStatus(Rule *rule, const CPP_RULES____STRING &ruleName, Action action) : RuleHolder(rule, action), ruleName(ruleName) {}
 
 std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::LogMatchStatus::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match_ = rule->match(iterator, undo, doAction);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
-    CPP_RULES____COUT << "rule '" << ruleName << "' was " << (match ? "matched" : "not matched") CPP_RULES____COUT_ENDL;
+    if (iterator.enable_logging) CPP_RULES____COUT << "rule '" << ruleName << "' was " << (match ? "matched" : "not matched") CPP_RULES____COUT_ENDL;
     if (doAction) action(Input(iterator, match, undo, match.matches));
     return match;
 }
 
-CPP::Rules::LogCapture::LogCapture(Rule *rule, const CPP_RULES____STRING &ruleName, Action action) : ruleName(ruleName), RuleHolder(rule, action) {}
+CPP::Rules::LogCapture::LogCapture(Rule *rule, const CPP_RULES____STRING &ruleName, Action action) : RuleHolder(rule, action), ruleName(ruleName) {}
 
 std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::LogCapture::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match_ = rule->match(iterator, undo, doAction);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
-    if (match) {
-        CPP_RULES____COUT << "rule '" << ruleName << "' captured " << Input(iterator, match, undo, 0).quotedString() <<"\n" CPP_RULES____COUT_ENDL;
-    } else {
-        CPP_RULES____COUT << "rule '" << ruleName << "' did not capture anything because it did not match" <<"\n" CPP_RULES____COUT_ENDL;
+    if (iterator.enable_logging) {
+        if (match) {
+            CPP_RULES____COUT << "rule '" << ruleName << "' captured " << Input(iterator, match, undo, 0).quotedString() <<"\n" CPP_RULES____COUT_ENDL;
+        } else {
+            CPP_RULES____COUT << "rule '" << ruleName << "' did not capture anything because it did not match" <<"\n" CPP_RULES____COUT_ENDL;
+        }
     }
     if (doAction) action(Input(iterator, match, undo, match.matches));
     return match;
 }
 
-CPP::Rules::LogInput::LogInput(Rule *rule, const CPP_RULES____STRING &ruleName, Action action) : ruleName(ruleName), RuleHolder(rule, action) {}
+CPP::Rules::LogInput::LogInput(Rule *rule, const CPP_RULES____STRING &ruleName, Action action) : RuleHolder(rule, action), ruleName(ruleName) {}
 
 std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::LogInput::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match_ = rule->match(iterator, undo, doAction);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
-    CPP_RULES____COUT << "input after rule '" << ruleName << "' : " << iterator.currentString() CPP_RULES____COUT_ENDL;
+    if (iterator.enable_logging) CPP_RULES____COUT << "input after rule '" << ruleName << "' : " << iterator.currentString() CPP_RULES____COUT_ENDL;
     if (doAction) action(Input(iterator, match, undo, match.matches));
     return match;
 }
 
-CPP::Rules::LogTrace::LogTrace(Rule *rule, const CPP_RULES____STRING &ruleName, Action action) : ruleName(ruleName), RuleHolder(rule, action) {}
+CPP::Rules::LogTrace::LogTrace(Rule *rule, const CPP_RULES____STRING &ruleName, Action action) : RuleHolder(rule, action), ruleName(ruleName) {}
 
 std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::LogTrace::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match_ = rule->match(iterator, undo, doAction);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
-    CPP_RULES____COUT << "rule: " << ruleName CPP_RULES____COUT_ENDL;
-    CPP_RULES____COUT << "    match: " << (match ? "true" : "false") CPP_RULES____COUT_ENDL;
-    if (match) {
-        CPP_RULES____COUT << "    capture: " << Input(iterator, match, undo, 0).quotedString() CPP_RULES____COUT_ENDL;
-    }
-    CPP_RULES____COUT << "    input line: " CPP_RULES____COUT_ENDL;
-    undo->print_error(iterator, "    ");
-    undo->print([&](auto description) {
-        CPP_RULES____COUT_NO_SPACE << description CPP_RULES____COUT_ENDL;
-        undo->undo();
+    if (iterator.enable_logging) {
+        CPP_RULES____COUT << "rule: " << ruleName CPP_RULES____COUT_ENDL;
+        CPP_RULES____COUT << "    match: " << (match ? "true" : "false") CPP_RULES____COUT_ENDL;
+        if (match) {
+            CPP_RULES____COUT << "    capture: " << Input(iterator, match, undo, 0).quotedString() CPP_RULES____COUT_ENDL;
+        }
+        CPP_RULES____COUT << "    input line: " CPP_RULES____COUT_ENDL;
         undo->print_error(iterator, "    ");
-    });
-    while(undo->redo()) {};
+        undo->print([&](auto description) {
+            CPP_RULES____COUT_NO_SPACE << description CPP_RULES____COUT_ENDL;
+            undo->undo();
+            undo->print_error(iterator, "    ");
+        });
+        while(undo->redo()) {};
+    }
     if (doAction) action(Input(iterator, match, undo, match.matches));
     return match;
 }
@@ -427,7 +431,7 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::ZeroOrMore::match(Ite
     return match;
 }
 
-CPP::Rules::MatchBUntilA::MatchBUntilA(Rule *A, Rule *B, Action action) : A(A), B(B), Rule(action) {}
+CPP::Rules::MatchBUntilA::MatchBUntilA(Rule *A, Rule *B, Action action) : Rule(action), A(A), B(B) {}
 
 std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::MatchBUntilA::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     // until A matches, match B
