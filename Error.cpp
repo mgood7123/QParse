@@ -26,7 +26,7 @@ void CPP::Rules::printError(const CPP_RULES____STRING & message, Iterator & iter
 }
 
 
-CPP::Rules::Error::Error(const CPP_RULES____STRING &message, Action action) : message(message), Rule(action) {}
+CPP::Rules::Error::Error(const CPP_RULES____STRING &message, Action action) : Rule(action), message(message) {}
 
 std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Error::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     IteratorMatcher::MatchData match;
@@ -39,7 +39,7 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Error::match(Iterator
     return std::nullopt;
 }
 
-CPP::Rules::ErrorIfMatch::ErrorIfMatch(Rule *rule, const CPP_RULES____STRING &message, Action action) : message(message), RuleHolder(rule, action) {}
+CPP::Rules::ErrorIfMatch::ErrorIfMatch(Rule *rule, const CPP_RULES____STRING &message, Action action) : RuleHolder(rule, action), message(message) {}
 
 std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::ErrorIfMatch::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match_ = rule->match(iterator, undo, doAction);
@@ -54,7 +54,7 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::ErrorIfMatch::match(I
     return match;
 }
 
-CPP::Rules::ErrorIfNotMatch::ErrorIfNotMatch(Rule *rule, const CPP_RULES____STRING &message, Action action) : message(message), RuleHolder(rule, action) {}
+CPP::Rules::ErrorIfNotMatch::ErrorIfNotMatch(Rule *rule, const CPP_RULES____STRING &message, Action action) : RuleHolder(rule, action), message(message) {}
 
 std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::ErrorIfNotMatch::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match_ = rule->match(iterator, undo, doAction);
