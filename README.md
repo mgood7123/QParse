@@ -11,6 +11,36 @@ to add support for another framework, see `framework_defines.h`
 
 ### Example
 
+#### simple:
+
+```c
+    // y, ye, yes, n, no
+    // case insensitive
+    auto y_ = new Rules::Or({new Rules::Char('y'), new Rules::Char('Y')});
+    auto e_ = new Rules::Or({new Rules::Char('e'), new Rules::Char('E')});
+    auto s_ = new Rules::Or({new Rules::Char('s'), new Rules::Char('S')});
+    auto n_ = new Rules::Or({new Rules::Char('n'), new Rules::Char('N')});
+    auto o_ = new Rules::Or({new Rules::Char('o'), new Rules::Char('O')});
+
+    bool a;
+
+    auto yes = new Rules::Or({
+        y_,
+        new Rules::Sequence({y_, e_}),
+        new Rules::Sequence({y_, e_, s_}),
+    }, [&](Rules::Input i) {
+        a = true;
+    });
+    auto no = new Rules::Or({
+        n_,
+        new Rules::Sequence({n_, o_}),
+    }, [&](Rules::Input i) {
+        a = false;
+    });
+    Rules::Or({yes, no}).match(answer);
+    return a;
+```
+
 #### moderate:
 
 ```c
