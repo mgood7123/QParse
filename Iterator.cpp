@@ -8,6 +8,7 @@ CPP::Iterator::Iterator(CPP_RULES____STRING * allocated_input) {
     info.current_char = info.iteratorCurrent[0];
 
     info.line_start = info.iteratorCurrent;
+    info.line_end = info.iteratorCurrent;
 
     compute_line_end();
 }
@@ -17,6 +18,7 @@ CPP::Iterator::Iterator(CPP_RULES____STRING &input) : input(&input) {
     info.current_char = info.iteratorCurrent[0];
 
     info.line_start = info.iteratorCurrent;
+    info.line_end = info.iteratorCurrent;
 
     compute_line_end();
 }
@@ -28,6 +30,7 @@ CPP::Iterator::Iterator(const char * input) {
     info.current_char = info.iteratorCurrent[0];
 
     info.line_start = info.iteratorCurrent;
+    info.line_end = info.iteratorCurrent;
 
     compute_line_end();
 }
@@ -207,8 +210,6 @@ void CPP::Iterator::pushInfoWithIterator(CPP_RULES____STRING::const_iterator ite
 bool CPP::Iterator::popInfo() {
     if (!infoStack.empty()) {
         info = infoStack.back();
-        compute_line_start();
-        compute_line_end();
         infoStack.pop_back();
         return true;
     }
@@ -223,37 +224,28 @@ void CPP::Iterator::popInfo(size_t n) {
 
 void CPP::Iterator::compute_line_end() {
     auto s = info.iteratorCurrent;
-    if (!has_next()) {
-        info.line_end = info.iteratorCurrent;
-        return;
-    }
-    while(has_next()) {
-        info.iteratorCurrent++;
-        auto h = has_next();
-        if (info.iteratorCurrent[0] == '\n' || !h) {
-            if (h) info.iteratorCurrent--;
-            info.line_end = info.iteratorCurrent;
+    while(true) {
+        if (info.iteratorCurrent[0] == '\n') {
             break;
         }
+        if (!has_next()) break;
+        info.iteratorCurrent++;
     }
+    info.line_end = info.iteratorCurrent;
     info.iteratorCurrent = s;
 }
 
 void CPP::Iterator::compute_line_start() {
     auto s = info.iteratorCurrent;
-    if (!has_previous()) {
-        info.line_start = info.iteratorCurrent;
-        return;
-    }
-    while(has_previous()) {
-        info.iteratorCurrent--;
-        bool h = has_previous();
-        if (info.iteratorCurrent[0] == '\n' || !h) {
-            if (h) info.iteratorCurrent++;
-            info.line_start = info.iteratorCurrent;
+    while(true) {
+        if (info.iteratorCurrent[0] == '\n') {
+            info.iteratorCurrent++;
             break;
         }
+        if (!has_previous()) break;
+        info.iteratorCurrent--;
     }
+    info.line_start = info.iteratorCurrent;
     info.iteratorCurrent = s;
 }
 
