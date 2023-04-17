@@ -551,7 +551,7 @@ an `if statement` in the form of a `Rule`
 
 syntax: `if([&] { return CONDITION; }, RTrue, RFalse)`
 
-use this to conditionally execute rules based on conditional input thay may be determined by executed actions or outside factors such as threads or input variables
+use this to conditionally execute rules based on conditional input that may be determined by executed actions or outside factors such as threads or input variables
 
 #### Stack
 a `Rule` stack, use `setBase` to set the base rule, and an optional action
