@@ -373,7 +373,7 @@ a `Grammar` is a set of `Rule` objects that define the `Grammar Definition`
 
 all rule objects accept an `ACTION` in the form of the following lambda: `[&] (QParse::Rules::Input input) { code_here(); }`, or `std::function<void, QParse::Rules::Input>`
 
-these are sometimes called `expressions` as they `express` how you want to parse something
+rule objects are sometimes called `expressions` as they `express` how you want to parse something
 
 for example, lets parse `"some string"`
 
