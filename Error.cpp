@@ -35,7 +35,7 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Error::match(It
     match.matched = false;
     if (doAction) action(Input(iterator, match, undo, 0));
     //iterator.popInfo(match.matches);
-    printError(message, iterator, *undo);
+    if (doAction) printError(message, iterator, *undo);
     return std::nullopt;
 }
 
@@ -48,7 +48,7 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::ErrorIfMatch::m
     if (match) {
         if (doAction) action(Input(iterator, match, undo, 0));
         //iterator.popInfo(match.matches);
-        printError(message, iterator, *undo);
+        if (doAction) printError(message, iterator, *undo);
         return std::nullopt;
     }
     return match;
@@ -63,7 +63,7 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::ErrorIfNotMatch
     if (!match) {
         if (doAction) action(Input(iterator, match, undo, 0));
         //iterator.popInfo(match.matches);
-        printError(message, iterator, *undo);
+        if (doAction) printError(message, iterator, *undo);
         return std::nullopt;
     }
     return match;
