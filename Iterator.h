@@ -1,12 +1,12 @@
-#ifndef CPP_ITERATOR
-#define CPP_ITERATOR
+#ifndef QParse_ITERATOR
+#define QParse_ITERATOR
 
 #include "framework_defines.h"
 
 #include <functional>
-#include CPP_RULES____STRING_INCLUDE
-#include CPP_RULES____VECTOR_INCLUDE
-#include CPP_RULES____COUT_INCLUDE
+#include QParse_RULES____STRING_INCLUDE
+#include QParse_RULES____VECTOR_INCLUDE
+#include QParse_RULES____COUT_INCLUDE
 #include <optional>
 #include <stdexcept>
 
@@ -32,41 +32,41 @@
 // child previous--------------------^---^   // '3' from parent, decreases iterator and returns it
 // child previous--------------------^       // '7' from itself, decreases iterator and returns it
 
-namespace CPP {
+namespace QParse {
     class Iterator {
 #ifdef GTEST_API_
     public:
 #endif
         struct SaveInfo {
-            CPP_RULES____STRING::difference_type iteratorCurrent;
-            CPP_RULES____STRING::difference_type line_start;
-            CPP_RULES____STRING::difference_type line_end;
+            QParse_RULES____STRING::difference_type iteratorCurrent;
+            QParse_RULES____STRING::difference_type line_start;
+            QParse_RULES____STRING::difference_type line_end;
             uint64_t current_line = 1;
             uint64_t current_column = 1;
-            CPP_RULES____CHAR current_char = '\0';
+            QParse_RULES____CHAR current_char = '\0';
         };
         struct Info {
-            CPP_RULES____STRING::const_iterator iteratorCurrent;
-            CPP_RULES____STRING::const_iterator line_start;
-            CPP_RULES____STRING::const_iterator line_end;
+            QParse_RULES____STRING::const_iterator iteratorCurrent;
+            QParse_RULES____STRING::const_iterator line_start;
+            QParse_RULES____STRING::const_iterator line_end;
             uint64_t current_line = 1;
             uint64_t current_column = 1;
-            CPP_RULES____CHAR current_char = '\0';
+            QParse_RULES____CHAR current_char = '\0';
         };
         Info info;
-        CPP_RULES____VECTOR <Info> infoStack;
+        QParse_RULES____VECTOR <Info> infoStack;
         bool allocated = false;
 
         std::function<void(const char*)> next_prev_callback = [](auto unused){};
 
-        Iterator(CPP_RULES____STRING *allocated_input);
+        Iterator(QParse_RULES____STRING *allocated_input);
 
     public:
-        CPP_RULES____STRING *input;
+        QParse_RULES____STRING *input;
 
         bool enable_logging;
 
-        Iterator(CPP_RULES____STRING &input);
+        Iterator(QParse_RULES____STRING &input);
         Iterator(const char * input);
         ~Iterator();
 
@@ -79,41 +79,41 @@ namespace CPP {
 
         bool has_next() const;
 
-        CPP_RULES____CHAR next();
+        QParse_RULES____CHAR next();
 
         bool has_previous() const;
 
-        CPP_RULES____CHAR previous();
+        QParse_RULES____CHAR previous();
 
-        CPP_RULES____CHAR peekPrevious() const;
+        QParse_RULES____CHAR peekPrevious() const;
 
-        CPP_RULES____CHAR peekNext() const;
+        QParse_RULES____CHAR peekNext() const;
 
-        CPP_RULES____STRING::const_iterator cbegin() const;
+        QParse_RULES____STRING::const_iterator cbegin() const;
 
-        CPP_RULES____STRING::const_iterator current() const;
+        QParse_RULES____STRING::const_iterator current() const;
 
-        void setCurrent(CPP_RULES____STRING::const_iterator current);
+        void setCurrent(QParse_RULES____STRING::const_iterator current);
 
-        CPP_RULES____STRING::difference_type currentPosition() const;
+        QParse_RULES____STRING::difference_type currentPosition() const;
 
-        CPP_RULES____STRING::difference_type currentPosition(CPP_RULES____STRING::const_iterator iterator) const;
+        QParse_RULES____STRING::difference_type currentPosition(QParse_RULES____STRING::const_iterator iterator) const;
 
-        CPP_RULES____STRING::const_iterator peekPreviousCurrent() const;
+        QParse_RULES____STRING::const_iterator peekPreviousCurrent() const;
 
-        CPP_RULES____STRING::const_iterator peekNextCurrent() const;
+        QParse_RULES____STRING::const_iterator peekNextCurrent() const;
 
-        CPP_RULES____STRING::const_iterator cend() const;
+        QParse_RULES____STRING::const_iterator cend() const;
 
         void reset();
 
-        CPP_RULES____STRING substr(CPP_RULES____STRING::const_iterator begin, CPP_RULES____STRING::const_iterator end) const;
+        QParse_RULES____STRING substr(QParse_RULES____STRING::const_iterator begin, QParse_RULES____STRING::const_iterator end) const;
 
-        CPP_RULES____STRING lineString();
+        QParse_RULES____STRING lineString();
 
         void pushInfo();
 
-        void pushInfoWithIterator(CPP_RULES____STRING::const_iterator iterator);
+        void pushInfoWithIterator(QParse_RULES____STRING::const_iterator iterator);
 
         bool popInfo();
 
@@ -128,20 +128,20 @@ namespace CPP {
 
         struct SaveState {
             SaveInfo info;
-            CPP_RULES____VECTOR <SaveInfo> infoStack;
+            QParse_RULES____VECTOR <SaveInfo> infoStack;
         };
 
         SaveState save();
 
-        SaveState save(CPP_RULES____STRING::const_iterator iterator);
+        SaveState save(QParse_RULES____STRING::const_iterator iterator);
 
         void load(SaveState & saveState);
 
-        void load(SaveState & saveState, CPP_RULES____STRING::const_iterator & iterator);
+        void load(SaveState & saveState, QParse_RULES____STRING::const_iterator & iterator);
 
-        CPP_RULES____STRING currentString() const;
+        QParse_RULES____STRING currentString() const;
 
-        CPP_RULES____STRING currentString(CPP_RULES____STRING::const_iterator iterator) const;
+        QParse_RULES____STRING currentString(QParse_RULES____STRING::const_iterator iterator) const;
     };
 
 #if (false)
@@ -245,7 +245,7 @@ namespace CPP {
 #ifdef GTEST_API_
 TEST(Initialization_Iterator, test_01) {
     std::string a = "Hello World!";
-    CPP::Iterator<std::string> b(a);
+    QParse::Iterator<std::string> b(a);
     EXPECT_EQ(b.input, a);
     EXPECT_EQ(b.input.data(), a.data());
     EXPECT_EQ(b.input.c_str(), a.c_str());
@@ -265,7 +265,7 @@ TEST(Initialization_Iterator, test_01) {
 
 TEST(Initialization_Iterator, test_02) {
     std::string a;
-    CPP::Iterator<std::string> b(a);
+    QParse::Iterator<std::string> b(a);
     EXPECT_EQ(b.input, a);
     EXPECT_EQ(b.input.data(), a.data());
     EXPECT_EQ(b.input.c_str(), a.c_str());
@@ -285,7 +285,7 @@ TEST(Initialization_Iterator, test_02) {
 
 TEST(Initialization_Iterator, test_03) {
     std::string a = "";
-    CPP::Iterator<std::string> b(a);
+    QParse::Iterator<std::string> b(a);
     EXPECT_EQ(b.input, a);
     EXPECT_EQ(b.input.data(), a.data());
     EXPECT_EQ(b.input.c_str(), a.c_str());
@@ -305,7 +305,7 @@ TEST(Initialization_Iterator, test_03) {
 
 TEST(Iterator, basic_test_01) {
     std::string a = "Hello World!";
-    CPP::Iterator<std::string> b(a);
+    QParse::Iterator<std::string> b(a);
     EXPECT_EQ(b.current(), a.cbegin());
     EXPECT_FALSE(b.has_previous());
     EXPECT_TRUE(b.has_next());
@@ -317,7 +317,7 @@ TEST(Iterator, basic_test_01) {
 
 TEST(Iterator, basic_test_02) {
     std::string a;
-    CPP::Iterator<std::string> b(a);
+    QParse::Iterator<std::string> b(a);
     EXPECT_FALSE(b.has_next());
     EXPECT_FALSE(b.has_previous());
     EXPECT_EQ(b.next(), '\0');
@@ -328,7 +328,7 @@ TEST(Iterator, basic_test_02) {
 
 TEST(Iterator, basic_test_03) {
     std::string a = "";
-    CPP::Iterator<std::string> b(a);
+    QParse::Iterator<std::string> b(a);
     EXPECT_FALSE(b.has_next());
     EXPECT_FALSE(b.has_previous());
     EXPECT_EQ(b.next(), '\0');
@@ -339,7 +339,7 @@ TEST(Iterator, basic_test_03) {
 
 TEST(Iterator, basic_test_04) {
     std::string a = "Hello World!";
-    CPP::Iterator<std::string> b(a);
+    QParse::Iterator<std::string> b(a);
     EXPECT_FALSE(b.has_previous());
     EXPECT_TRUE(b.has_next());
     EXPECT_EQ(b.next(), 'H');
@@ -352,7 +352,7 @@ TEST(Iterator, basic_test_04) {
 
 TEST(Iterator, basic_test_05) {
     std::string a;
-    CPP::Iterator<std::string> b(a);
+    QParse::Iterator<std::string> b(a);
     EXPECT_FALSE(b.has_next());
     EXPECT_FALSE(b.has_previous());
     EXPECT_EQ(b.next(), '\0');
@@ -365,7 +365,7 @@ TEST(Iterator, basic_test_05) {
 
 TEST(Iterator, basic_test_06) {
     std::string a = "";
-    CPP::Iterator<std::string> b(a);
+    QParse::Iterator<std::string> b(a);
     EXPECT_FALSE(b.has_next());
     EXPECT_FALSE(b.has_previous());
     EXPECT_EQ(b.next(), '\0');
@@ -378,7 +378,7 @@ TEST(Iterator, basic_test_06) {
 
 TEST(Iterator, test_01) {
     std::string a = "12";
-    CPP::Iterator<std::string> b(a);
+    QParse::Iterator<std::string> b(a);
     EXPECT_EQ(b.currentPosition(), 0);
     EXPECT_EQ(b.peekNext(), '1');
     EXPECT_EQ(b.currentPosition(), 0);
@@ -408,7 +408,7 @@ TEST(Iterator, test_01) {
 
 TEST(Iterator_Stack, test_01) {
     std::string a = "12";
-    CPP::Iterator<std::string> b(a);
+    QParse::Iterator<std::string> b(a);
     b.pushIterator();
     EXPECT_EQ(b.iteratorStack.size(), 1);
     EXPECT_EQ(b.currentPosition(), 0);
@@ -421,14 +421,14 @@ TEST(Iterator_Stack, test_01) {
 }
 
 TEST(Iterator_SaveState, test_initialization_01) {
-    CPP::Iterator<std::string>::SaveState saveState;
+    QParse::Iterator<std::string>::SaveState saveState;
     EXPECT_EQ(saveState.iteratorCurrent, 0);
     EXPECT_EQ(saveState.iteratorStack.size(), 0);
 }
 
 TEST(Iterator_SaveState, test_initialization_02) {
     std::string a;
-    CPP::Iterator<std::string> b(a);
+    QParse::Iterator<std::string> b(a);
     auto saveState = b.save();
     EXPECT_EQ(saveState.iteratorCurrent, 0);
     EXPECT_EQ(saveState.iteratorStack.size(), 0);
@@ -436,7 +436,7 @@ TEST(Iterator_SaveState, test_initialization_02) {
 
 TEST(Iterator_SaveState, test_save) {
     std::string a;
-    CPP::Iterator<std::string> b(a);
+    QParse::Iterator<std::string> b(a);
     auto saveState = b.save();
     EXPECT_EQ(saveState.iteratorCurrent, 0);
     EXPECT_EQ(saveState.iteratorStack.size(), 0);

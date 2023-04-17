@@ -4,7 +4,7 @@
 #include <stack>
 #include "Rules.h"
 
-namespace CPP {
+namespace QParse {
     namespace Rules {
     class Stack : public Rule {
 #ifdef GTEST_API_

@@ -1,75 +1,75 @@
 #include "Rules.h"
 
-CPP::Rules::Input::Input(Iterator &iterator, IteratorMatcher::MatchData &match, UndoRedo *undo, int pops) : iterator(iterator), match(match), undo(undo), pops(pops) {}
+QParse::Rules::Input::Input(Iterator &iterator, IteratorMatcher::MatchData &match, UndoRedo *undo, int pops) : iterator(iterator), match(match), undo(undo), pops(pops) {}
 
-CPP::Rules::Input CPP::Rules::Input::copy(Iterator &copy) {
+QParse::Rules::Input QParse::Rules::Input::copy(Iterator &copy) {
     return Input(copy, match, undo, 0);
 }
 
-CPP_RULES____STRING CPP::Rules::Input::string(Iterator & iterator, IteratorMatcher::MatchData &match) {
+QParse_RULES____STRING QParse::Rules::Input::string(Iterator & iterator, IteratorMatcher::MatchData &match) {
     return iterator.substr(match.begin, match.end);
 }
 
-CPP_RULES____STRING CPP::Rules::Input::string() {
+QParse_RULES____STRING QParse::Rules::Input::string() {
     return iterator.substr(match.begin, match.end);
 }
 
-CPP_RULES____STRING CPP::Rules::Input::quotedString(CPP_RULES____STRING quote) {
-    CPP_RULES____STRING out = quote;
+QParse_RULES____STRING QParse::Rules::Input::quotedString(QParse_RULES____STRING quote) {
+    QParse_RULES____STRING out = quote;
     out += string();
     out += quote;
     return out;
 }
 
-CPP_RULES____STRING CPP::Rules::Input::quote(const CPP_RULES____STRING &string, CPP_RULES____STRING quote) {
-    CPP_RULES____STRING out = quote;
+QParse_RULES____STRING QParse::Rules::Input::quote(const QParse_RULES____STRING &string, QParse_RULES____STRING quote) {
+    QParse_RULES____STRING out = quote;
     out += string;
     out += quote;
     return out;
 }
 
-CPP_RULES____STRING CPP::Rules::Input::quote(const char &character, CPP_RULES____STRING quote) {
-    CPP_RULES____STRING out = quote;
+QParse_RULES____STRING QParse::Rules::Input::quote(const char &character, QParse_RULES____STRING quote) {
+    QParse_RULES____STRING out = quote;
     out += character;
     out += quote;
     return out;
 }
 
-CPP_RULES____STRING CPP::Rules::Input::stringRemoveCharactersFromEnd(int tail) {
+QParse_RULES____STRING QParse::Rules::Input::stringRemoveCharactersFromEnd(int tail) {
     return iterator.substr(match.begin, match.end - tail);
 }
 
-CPP_RULES____STRING CPP::Rules::Input::quotedStringRemoveCharactersFromEnd(int tail, CPP_RULES____STRING quote) {
-    CPP_RULES____STRING out = quote;
+QParse_RULES____STRING QParse::Rules::Input::quotedStringRemoveCharactersFromEnd(int tail, QParse_RULES____STRING quote) {
+    QParse_RULES____STRING out = quote;
     out += stringRemoveCharactersFromEnd(tail);
     out += quote;
     return out;
 }
 
-CPP_RULES____STRING CPP::Rules::Input::stringRemoveCharactersFromStart(int head) {
+QParse_RULES____STRING QParse::Rules::Input::stringRemoveCharactersFromStart(int head) {
     return iterator.substr(match.begin + head, match.end);
 }
 
-CPP_RULES____STRING CPP::Rules::Input::quotedStringRemoveCharactersFromStart(int head, CPP_RULES____STRING quote) {
-    CPP_RULES____STRING out = quote;
+QParse_RULES____STRING QParse::Rules::Input::quotedStringRemoveCharactersFromStart(int head, QParse_RULES____STRING quote) {
+    QParse_RULES____STRING out = quote;
     out += stringRemoveCharactersFromEnd(head);
     out += quote;
     return out;
 }
 
-CPP_RULES____STRING CPP::Rules::Input::stringRemoveCharactersFromStartAndEnd(int head, int tail) {
+QParse_RULES____STRING QParse::Rules::Input::stringRemoveCharactersFromStartAndEnd(int head, int tail) {
     return iterator.substr(match.begin + head, match.end - tail);
 }
 
-CPP_RULES____STRING CPP::Rules::Input::quotedStringRemoveCharactersFromStartAndEnd(int head, int tail, CPP_RULES____STRING quote) {
-    CPP_RULES____STRING out = quote;
+QParse_RULES____STRING QParse::Rules::Input::quotedStringRemoveCharactersFromStartAndEnd(int head, int tail, QParse_RULES____STRING quote) {
+    QParse_RULES____STRING out = quote;
     out += stringRemoveCharactersFromStartAndEnd(head, tail);
     out += quote;
     return out;
 }
 
-void CPP::Rules::Input::rescan() {
-    CPP::Rules::UndoRedo::UNDO_KEY_PTR undo_iterator;
+void QParse::Rules::Input::rescan() {
+    QParse::Rules::UndoRedo::UNDO_KEY_PTR undo_iterator;
 
     if (undo != nullptr) {
         undo->push_command("After rescan");
@@ -83,13 +83,13 @@ void CPP::Rules::Input::rescan() {
     }
 }
 
-void CPP::Rules::Input::eraseAndRescan() {
+void QParse::Rules::Input::eraseAndRescan() {
     if (executed) {
         throw new std::runtime_error("cannot modify input more than once in the same rule");
     }
     executed = true;
     if (undo != nullptr) {
-        undo->push_command(CPP_RULES____STRING("After erasing ") + Input::quote(this->string()) + " and rescan");
+        undo->push_command(QParse_RULES____STRING("After erasing ") + Input::quote(this->string()) + " and rescan");
         undo->disable_push_command();
     }
     replace("");
@@ -100,9 +100,9 @@ void CPP::Rules::Input::eraseAndRescan() {
     }
 }
 
-void CPP::Rules::Input::replace(const char &character) {
+void QParse::Rules::Input::replace(const char &character) {
     if (undo != nullptr) {
-        undo->push_command(CPP_RULES____STRING("After replacing ") + Input::quote(this->string()) + " with " + Input::quote(character));
+        undo->push_command(QParse_RULES____STRING("After replacing ") + Input::quote(this->string()) + " with " + Input::quote(character));
         undo->disable_push_command();
     }
 
@@ -114,7 +114,7 @@ void CPP::Rules::Input::replace(const char &character) {
     }
 }
 
-void CPP::Rules::Input::replace_(const CPP_RULES____STRING &string) {
+void QParse::Rules::Input::replace_(const QParse_RULES____STRING &string) {
     if (executed) {
         throw new std::runtime_error("cannot modify input more than once in the same rule");
     }
@@ -122,12 +122,12 @@ void CPP::Rules::Input::replace_(const CPP_RULES____STRING &string) {
 
     // modifying a string invalidates the iterators
 
-    CPP_RULES____STRING old_string = Input::string(iterator, match);
+    QParse_RULES____STRING old_string = Input::string(iterator, match);
 
-    CPP::Rules::UndoRedo::UNDO_KEY_PTR undo_iterator;
+    QParse::Rules::UndoRedo::UNDO_KEY_PTR undo_iterator;
 
     if (undo != nullptr) {
-        undo->push_command(CPP_RULES____STRING("After replacing ") + Input::quote(this->string()) + " with " + Input::quote(string));
+        undo->push_command(QParse_RULES____STRING("After replacing ") + Input::quote(this->string()) + " with " + Input::quote(string));
         undo->disable_push_command();
         undo_iterator = undo->command->push_undo_iterator(iterator);
     }
@@ -137,11 +137,11 @@ void CPP::Rules::Input::replace_(const CPP_RULES____STRING &string) {
 
     auto old_end_savePoint = iterator.save(match.end);
 
-    CPP_RULES____STRING_REPLACE____STRING_PTR__ITERATOR_BEGIN__ITERATOR_END__STRING(iterator.input, match.begin, match.end, string);
+    QParse_RULES____STRING_REPLACE____STRING_PTR__ITERATOR_BEGIN__ITERATOR_END__STRING(iterator.input, match.begin, match.end, string);
     iterator.load(savePoint1);
     iterator.load(savePoint2, match.begin);
 
-    CPP_RULES____STRING::const_iterator old_end;
+    QParse_RULES____STRING::const_iterator old_end;
 
     iterator.load(old_end_savePoint, old_end);
 
@@ -155,10 +155,10 @@ void CPP::Rules::Input::replace_(const CPP_RULES____STRING &string) {
     }
 }
 
-void CPP::Rules::Input::replace(const CPP_RULES____STRING &string) {
-    CPP::Rules::UndoRedo::UNDO_KEY_PTR undo_iterator;
+void QParse::Rules::Input::replace(const QParse_RULES____STRING &string) {
+    QParse::Rules::UndoRedo::UNDO_KEY_PTR undo_iterator;
     if (undo != nullptr) {
-        undo->push_command(CPP_RULES____STRING("After replacing ") + Input::quote(this->string()) + " with " + Input::quote(string));
+        undo->push_command(QParse_RULES____STRING("After replacing ") + Input::quote(this->string()) + " with " + Input::quote(string));
         undo->disable_push_command();
         undo_iterator = undo->command->push_undo_iterator(iterator);
     }
@@ -170,9 +170,9 @@ void CPP::Rules::Input::replace(const CPP_RULES____STRING &string) {
     }
 }
 
-void CPP::Rules::Input::replaceAndRescan(const char &character) {
+void QParse::Rules::Input::replaceAndRescan(const char &character) {
     if (undo != nullptr) {
-        undo->push_command(CPP_RULES____STRING("After replacing ") + Input::quote(this->string()) + " with " + Input::quote(character) + " and rescan");
+        undo->push_command(QParse_RULES____STRING("After replacing ") + Input::quote(this->string()) + " with " + Input::quote(character) + " and rescan");
         undo->disable_push_command();
     }
     replace(character);
@@ -182,9 +182,9 @@ void CPP::Rules::Input::replaceAndRescan(const char &character) {
     }
 }
 
-void CPP::Rules::Input::replaceAndRescan(const CPP_RULES____STRING &string) {
+void QParse::Rules::Input::replaceAndRescan(const QParse_RULES____STRING &string) {
     if (undo != nullptr) {
-        undo->push_command(CPP_RULES____STRING("After replacing ") + Input::quote(this->string()) + " with " + Input::quote(string) + " and rescan");
+        undo->push_command(QParse_RULES____STRING("After replacing ") + Input::quote(this->string()) + " with " + Input::quote(string) + " and rescan");
         undo->disable_push_command();
     }
     replace_(string);
@@ -194,9 +194,9 @@ void CPP::Rules::Input::replaceAndRescan(const CPP_RULES____STRING &string) {
     }
 }
 
-void CPP::Rules::Input::insert(const char &character) {
+void QParse::Rules::Input::insert(const char &character) {
     if (undo != nullptr) {
-        undo->push_command(CPP_RULES____STRING("After inserting ") + Input::quote(character));
+        undo->push_command(QParse_RULES____STRING("After inserting ") + Input::quote(character));
         undo->disable_push_command();
     }
     char string[2] = {character, '\0'};
@@ -206,16 +206,16 @@ void CPP::Rules::Input::insert(const char &character) {
     }
 }
 
-void CPP::Rules::Input::insert(const CPP_RULES____STRING &string) {
+void QParse::Rules::Input::insert(const QParse_RULES____STRING &string) {
     if (executed) {
         throw new std::runtime_error("cannot modify input more than once in the same rule");
     }
     executed = true;
 
-    CPP::Rules::UndoRedo::UNDO_KEY_PTR undo_iterator;
+    QParse::Rules::UndoRedo::UNDO_KEY_PTR undo_iterator;
 
     if (undo != nullptr) {
-        undo->push_command(CPP_RULES____STRING("After inserting ") + Input::quote(string));
+        undo->push_command(QParse_RULES____STRING("After inserting ") + Input::quote(string));
         undo->disable_push_command();
         undo_iterator = undo->command->push_undo_iterator(iterator);
     }
@@ -225,12 +225,12 @@ void CPP::Rules::Input::insert(const CPP_RULES____STRING &string) {
     auto savePoint1 = iterator.save();
     auto savePoint2 = iterator.save(match.begin);
     auto savePoint3 = iterator.save(match.end);
-    CPP_RULES____STRING_INSERT____STRING_PTR__INTEGER__STRING(iterator.input, iterator.currentPosition(match.end), string);
+    QParse_RULES____STRING_INSERT____STRING_PTR__INTEGER__STRING(iterator.input, iterator.currentPosition(match.end), string);
     iterator.load(savePoint1);
     iterator.load(savePoint2, match.begin);
     iterator.load(savePoint3, match.end);
 
-    CPP_RULES____STRING::const_iterator old_end = match.end;
+    QParse_RULES____STRING::const_iterator old_end = match.end;
 
     match.end += string.size();
 
@@ -245,9 +245,9 @@ void CPP::Rules::Input::insert(const CPP_RULES____STRING &string) {
 
 }
 
-void CPP::Rules::Input::insertAndRescan(const char &character) {
+void QParse::Rules::Input::insertAndRescan(const char &character) {
     if (undo != nullptr) {
-        undo->push_command(CPP_RULES____STRING("After inserting ") + Input::quote(character) + " and rescan");
+        undo->push_command(QParse_RULES____STRING("After inserting ") + Input::quote(character) + " and rescan");
         undo->disable_push_command();
     }
     insert(character);
@@ -257,9 +257,9 @@ void CPP::Rules::Input::insertAndRescan(const char &character) {
     }
 }
 
-void CPP::Rules::Input::insertAndRescan(const CPP_RULES____STRING &string) {
+void QParse::Rules::Input::insertAndRescan(const QParse_RULES____STRING &string) {
     if (undo != nullptr) {
-        undo->push_command(CPP_RULES____STRING("After inserting ") + Input::quote(string) + " and rescan");
+        undo->push_command(QParse_RULES____STRING("After inserting ") + Input::quote(string) + " and rescan");
         undo->disable_push_command();
     }
     insert(string);
@@ -269,6 +269,6 @@ void CPP::Rules::Input::insertAndRescan(const CPP_RULES____STRING &string) {
     }
 }
 
-CPP::Iterator &CPP::Rules::Input::getIterator() const {
+QParse::Iterator &QParse::Rules::Input::getIterator() const {
     return iterator;
 }

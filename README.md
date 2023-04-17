@@ -3,9 +3,9 @@ A powerful Parser Combinator library with error reporting and input rewriting ca
 
 ## Building
 
-define `CPP_RULES_USE_QT_FRAMEWORK` when building with QT6 for QT6 specialization support, uses `QString` and friends
+define `QParse_RULES_USE_QT_FRAMEWORK` when building with QT6 for QT6 specialization support, uses `QString` and friends
 
-otherwise leave `CPP_RULES_USE_QT_FRAMEWORK` undefined to build with `std` (non-QT) support, uses `std::string` and friends
+otherwise leave `QParse_RULES_USE_QT_FRAMEWORK` undefined to build with `std` (non-QT) support, uses `std::string` and friends
 
 to add support for another framework, see `framework_defines.h`
 
@@ -49,7 +49,7 @@ to add support for another framework, see `framework_defines.h`
     auto single_comment = new Rules::Sequence({
         new Rules::String("//"),
         new Rules::Optional(new Rules::Char(' ')),
-        new Rules::Until(new Rules::At(new Rules::NewlineOrEOF), [](CPP::Rules::Input i) {
+        new Rules::Until(new Rules::At(new Rules::NewlineOrEOF), [](QParse::Rules::Input i) {
             std::cout << "comment: " << i.quotedString() << std::endl;
         }),
         new Rules::Optional(new Rules::Newline)
@@ -61,12 +61,12 @@ to add support for another framework, see `framework_defines.h`
             new Rules::Newline(),
             new Rules::String("#COMMENT_END")}
         ))
-    }, [](CPP::Rules::Input i) {
+    }, [](QParse::Rules::Input i) {
         //std::cout << "block comment: " << i.quotedString() << std::endl;
     });
 
     auto line = new Rules::Sequence({
-        new Rules::Until(new Rules::At(new Rules::NewlineOrEOF), [](CPP::Rules::Input i) {
+        new Rules::Until(new Rules::At(new Rules::NewlineOrEOF), [](QParse::Rules::Input i) {
             std::cout << "line: " << i.quotedString() << std::endl;
         }),
         new Rules::Optional(new Rules::Newline)
@@ -107,7 +107,7 @@ to add support for another framework, see `framework_defines.h`
 
     std::vector<Info> syscalls;
 
-    using namespace CPP;
+    using namespace QParse;
 
     Iterator it = content;
 
@@ -119,7 +119,7 @@ to add support for another framework, see `framework_defines.h`
         new Rules::String("//"),
         spaces,
         new Rules::Sequence({
-            new Rules::Until(new Rules::At(new Rules::NewlineOrEOF), [&](CPP::Rules::Input i) {
+            new Rules::Until(new Rules::At(new Rules::NewlineOrEOF), [&](QParse::Rules::Input i) {
                 info.comment.push_back(i.string());
             }),
             new Rules::Optional(new Rules::Newline)
@@ -133,7 +133,7 @@ to add support for another framework, see `framework_defines.h`
                 new Rules::String("#COMMENT_END"), new Rules::Newline()
             }),
             new Rules::Sequence({
-                new Rules::Until(new Rules::At(new Rules::NewlineOrEOF), [&](CPP::Rules::Input i) {
+                new Rules::Until(new Rules::At(new Rules::NewlineOrEOF), [&](QParse::Rules::Input i) {
                     info.comment.push_back(i.string());
                 }),
                 new Rules::Optional(new Rules::Newline)
@@ -150,7 +150,7 @@ to add support for another framework, see `framework_defines.h`
 
     auto c_value = Rules_NS_LogTrace1(new Rules::Or({c_ident, number}), "c_value");
 
-    auto syscall = new Rules::TemporaryAction(c_ident, [&](CPP::Rules::Input i) {
+    auto syscall = new Rules::TemporaryAction(c_ident, [&](QParse::Rules::Input i) {
         std::string sl = i.string();
         std::transform(sl.begin(), sl.end(), sl.begin(), std::tolower);
         if (!info.is_typedef) {
@@ -185,7 +185,7 @@ to add support for another framework, see `framework_defines.h`
                 Rules_NS_LogTrace1(new Rules::ErrorIfNotMatch(new Rules::Sequence({
                     c_ident,
                     new Rules::Until(new Rules::At(new Rules::Sequence({spaces, new Rules::Char('>')})))
-                }, [&](CPP::Rules::Input i) {
+                }, [&](QParse::Rules::Input i) {
                     info.current_arguments = i.string();
                 }), "expected argument declarations, followed by closing '>'"), "argument declaration"),
                 spaces,
@@ -207,7 +207,7 @@ to add support for another framework, see `framework_defines.h`
                             new Rules::Any
                         })
                     ), "argument usages"),
-                }, [&](CPP::Rules::Input i) { info.current_arguments_usages = i.string(); }), "expected argument usages, followed by closing '>'"),
+                }, [&](QParse::Rules::Input i) { info.current_arguments_usages = i.string(); }), "expected argument usages, followed by closing '>'"),
             }), "numbered arguments"),
             Rules_NS_LogTrace1(new Rules::If(
                 [&]() { return info.current_typedef.length() != 0; },
@@ -216,7 +216,7 @@ to add support for another framework, see `framework_defines.h`
                     , "typedef declaration does not support varadic arguments (...)"
                 ),
                 new Rules::Optional(
-                    new Rules::String("...", [&](CPP::Rules::Input i) { info.current_arguments = i.string(); })
+                    new Rules::String("...", [&](QParse::Rules::Input i) { info.current_arguments = i.string(); })
                 )
             ), "any number of arguments")
         }),
@@ -260,7 +260,7 @@ to add support for another framework, see `framework_defines.h`
                     Rules_NS_LogTrace1(syscall_line_end, "at syscall line end")
                 })
             })),
-            new Rules::String("typedef", [&](CPP::Rules::Input i) { info.is_typedef = true; }),
+            new Rules::String("typedef", [&](QParse::Rules::Input i) { info.is_typedef = true; }),
             spaces,
             new Rules::ErrorIfNotMatch(syscall, "expected syscall"),
             spaces,
@@ -281,7 +281,7 @@ to add support for another framework, see `framework_defines.h`
     auto empty_line = new Rules::Sequence({
         new Rules::MatchBUntilA(new Rules::At(new Rules::NewlineOrEOF), space),
         new Rules::Optional(new Rules::Newline)
-    }, [&](CPP::Rules::Input i) {
+    }, [&](QParse::Rules::Input i) {
         info.comment.clear();
         info.comment.shrink_to_fit();
     });
@@ -354,13 +354,13 @@ parses the following
 ### Basic Usage
 
 ```cpp
-#include <CPP/Rules_Extra.h>
+#include <QParse/Rules_Extra.h>
 ```
 
 we first start with an `Iterator`
 
 ```cpp
-using namespace CPP;
+using namespace QParse;
 
 Iterator iter = "some string";
 ```
@@ -374,7 +374,7 @@ these are sometimes called `expressions` as they `express` how you want to parse
 for example, lets parse `"some string"`
 
 ```cpp
-using namespace CPP;
+using namespace QParse;
 
 Iterator iter = "some string";
 

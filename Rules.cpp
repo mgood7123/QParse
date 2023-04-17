@@ -1,12 +1,12 @@
 #include "Rules.h"
-#include CPP_RULES____COUT_INCLUDE
+#include QParse_RULES____COUT_INCLUDE
 
-CPP::Rules::Action CPP::Rules::NO_ACTION = [](CPP::Rules::Input) {};
-CPP_RULES____VECTOR<CPP::Rules::RuleHolder::Reference*> CPP::Rules::RuleHolder::rules;
+QParse::Rules::Action QParse::Rules::NO_ACTION = [](QParse::Rules::Input) {};
+QParse_RULES____VECTOR<QParse::Rules::RuleHolder::Reference*> QParse::Rules::RuleHolder::rules;
 
-CPP::Rules::Rule::Rule(Action action) : action(action) {}
+QParse::Rules::Rule::Rule(Action action) : action(action) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Rule::match(const char *string, bool doAction)
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Rule::match(const char *string, bool doAction)
 {
     if (undo != nullptr && allocated) {
         delete undo;
@@ -16,7 +16,7 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Rule::match(const cha
     return match(string, undo, doAction);
 }
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Rule::match(CPP_RULES____STRING &string, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Rule::match(QParse_RULES____STRING &string, bool doAction) {
     if (undo != nullptr && allocated) {
         delete undo;
     }
@@ -25,7 +25,7 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Rule::match(CPP_RULES
     return match(string, undo, doAction);
 }
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Rule::match(Iterator &iterator, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Rule::match(Iterator &iterator, bool doAction) {
     if (undo != nullptr && allocated) {
         delete undo;
     }
@@ -34,18 +34,18 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Rule::match(Iterator 
     return match(iterator, undo, doAction);
 }
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Rule::match(const char *string, UndoRedo *undo, bool doAction)
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Rule::match(const char *string, UndoRedo *undo, bool doAction)
 {
     Iterator iterator(string);
     return match(iterator, undo, doAction);
 }
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Rule::match(CPP_RULES____STRING &string, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Rule::match(QParse_RULES____STRING &string, UndoRedo *undo, bool doAction) {
     Iterator iterator(string);
     return match(iterator, undo, doAction);
 }
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Rule::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Rule::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     IteratorMatcher::MatchData match;
     match.matched = false;
     match.begin = iterator.current();
@@ -53,13 +53,13 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Rule::match(Iterator 
     return match;
 }
 
-CPP::Rules::Rule::~Rule() {
+QParse::Rules::Rule::~Rule() {
     if (allocated) delete undo;
 }
 
-CPP::Rules::Success::Success(Action action) : Rule(action) {}
+QParse::Rules::Success::Success(Action action) : Rule(action) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Success::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Success::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     IteratorMatcher::MatchData match;
     match.matched = true;
     match.begin = iterator.current();
@@ -70,11 +70,11 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Success::match(Iterat
     return match;
 }
 
-CPP::Rules::AdvanceInputBy::AdvanceInputBy(Action action) : Rule(action), n(1) {}
+QParse::Rules::AdvanceInputBy::AdvanceInputBy(Action action) : Rule(action), n(1) {}
 
-CPP::Rules::AdvanceInputBy::AdvanceInputBy(int n, Action action) : Rule(action), n(n < 0 ? 0 : n) {}
+QParse::Rules::AdvanceInputBy::AdvanceInputBy(int n, Action action) : Rule(action), n(n < 0 ? 0 : n) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::AdvanceInputBy::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::AdvanceInputBy::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     IteratorMatcher::MatchData match;
     match.matched = true;
     match.begin = iterator.current();
@@ -86,9 +86,9 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::AdvanceInputBy::match
     return match;
 }
 
-CPP::Rules::Fail::Fail(Action action) : Rule(action) {}
+QParse::Rules::Fail::Fail(Action action) : Rule(action) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Fail::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Fail::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     IteratorMatcher::MatchData match;
     match.matched = false;
     match.begin = iterator.current();
@@ -97,9 +97,9 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Fail::match(Iterator 
     return match;
 }
 
-CPP::Rules::Any::Any(Action action) : Rule(action) {}
+QParse::Rules::Any::Any(Action action) : Rule(action) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Any::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Any::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     IteratorMatcher::MatchData match = IteratorMatcher::match(iterator);
     if (match && doAction) {
         action(Input(iterator, match, undo, match.matches));
@@ -107,9 +107,9 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Any::match(Iterator &
     return match;
 }
 
-CPP::Rules::Char::Char(char character, Action action) : Rule(action), character(character) {}
+QParse::Rules::Char::Char(char character, Action action) : Rule(action), character(character) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Char::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Char::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match = IteratorMatcher::match(iterator, character);
     if (match && doAction) {
         action(Input(iterator, match, undo, match.matches));
@@ -117,9 +117,9 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Char::match(Iterator 
     return match;
 }
 
-CPP::Rules::EndOfFile::EndOfFile(Action action) : Rule(action) {}
+QParse::Rules::EndOfFile::EndOfFile(Action action) : Rule(action) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::EndOfFile::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::EndOfFile::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     IteratorMatcher::MatchData match;
     match.begin = iterator.current();
     match.end = iterator.current();
@@ -135,9 +135,9 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::EndOfFile::match(Iter
     return match;
 }
 
-CPP::Rules::NewlineOrEOF::NewlineOrEOF(Action action) : Rule(action) {}
+QParse::Rules::NewlineOrEOF::NewlineOrEOF(Action action) : Rule(action) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::NewlineOrEOF::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::NewlineOrEOF::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match_ = Or({new String("\r\n"), new Char('\n')}).match(iterator, undo);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
@@ -154,9 +154,9 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::NewlineOrEOF::match(I
     return match;
 }
 
-CPP::Rules::Newline::Newline(Action action) : Rule(action) {}
+QParse::Rules::Newline::Newline(Action action) : Rule(action) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Newline::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Newline::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match_ = Or({new String("\r\n"), new Char('\n')}).match(iterator, undo);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
@@ -167,9 +167,9 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Newline::match(Iterat
     return match;
 }
 
-CPP::Rules::String::String(const CPP_RULES____STRING &string, Action action) : Rule(action), string(string) {}
+QParse::Rules::String::String(const QParse_RULES____STRING &string, Action action) : Rule(action), string(string) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::String::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::String::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match = IteratorMatcher::match(iterator, string);
 
     if (match && doAction) {
@@ -178,12 +178,12 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::String::match(Iterato
     return match;
 }
 
-CPP::Rules::RuleHolder::RuleHolder(Rule *rule, Action action) : Rule(action) {
+QParse::Rules::RuleHolder::RuleHolder(Rule *rule, Action action) : Rule(action) {
     if (rule == nullptr) return;
     setRule(rule);
 }
 
-CPP::Rules::RuleHolder::RuleHolder(const RuleHolder &other) {
+QParse::Rules::RuleHolder::RuleHolder(const RuleHolder &other) {
     ref = other.ref;
     rule = other.rule;
     if (ref != nullptr) {
@@ -191,7 +191,7 @@ CPP::Rules::RuleHolder::RuleHolder(const RuleHolder &other) {
     }
 }
 
-CPP::Rules::RuleHolder &CPP::Rules::RuleHolder::operator=(const RuleHolder &other) {
+QParse::Rules::RuleHolder &QParse::Rules::RuleHolder::operator=(const RuleHolder &other) {
     ref = other.ref;
     rule = other.rule;
     if (ref != nullptr) {
@@ -200,15 +200,15 @@ CPP::Rules::RuleHolder &CPP::Rules::RuleHolder::operator=(const RuleHolder &othe
     return *this;
 }
 
-void CPP::Rules::RuleHolder::setRule(Rule *rule)
+void QParse::Rules::RuleHolder::setRule(Rule *rule)
 {
     if (rule == nullptr) {
         if (ref != nullptr) {
             if (ref->reference > 0) {
                 ref->reference--;
                 if (ref->reference == 0) {
-                    CPP_RULES____VECTOR<Reference*>::iterator r = rules.begin();
-                    CPP_RULES____VECTOR<Reference*>::const_iterator e = rules.cend();
+                    QParse_RULES____VECTOR<Reference*>::iterator r = rules.begin();
+                    QParse_RULES____VECTOR<Reference*>::const_iterator e = rules.cend();
                     while (r != e) {
                         if ((*r)->rule == ref->rule) {
                             break;
@@ -249,7 +249,7 @@ void CPP::Rules::RuleHolder::setRule(Rule *rule)
     }
 }
 
-CPP::Rules::RuleHolder::RuleHolder(RuleHolder &&other) noexcept {
+QParse::Rules::RuleHolder::RuleHolder(RuleHolder &&other) noexcept {
     ref = other.ref;
     rule = other.rule;
     if (ref != nullptr) {
@@ -257,7 +257,7 @@ CPP::Rules::RuleHolder::RuleHolder(RuleHolder &&other) noexcept {
     }
 }
 
-CPP::Rules::RuleHolder &CPP::Rules::RuleHolder::operator=(RuleHolder &&other) noexcept {
+QParse::Rules::RuleHolder &QParse::Rules::RuleHolder::operator=(RuleHolder &&other) noexcept {
     ref = other.ref;
     rule = other.rule;
     if (ref != nullptr) {
@@ -266,7 +266,7 @@ CPP::Rules::RuleHolder &CPP::Rules::RuleHolder::operator=(RuleHolder &&other) no
     return *this;
 }
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::RuleHolder::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::RuleHolder::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     if (ref == nullptr) { // we have no rule currently set
         IteratorMatcher::MatchData match;
         match.begin = iterator.current();
@@ -286,11 +286,11 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::RuleHolder::match(Ite
     return match;
 }
 
-CPP::Rules::RuleHolder::~RuleHolder() {
+QParse::Rules::RuleHolder::~RuleHolder() {
     setRule(nullptr);
 }
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::TemporaryAction::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::TemporaryAction::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match_ = rule->match(iterator, undo, false);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
@@ -300,75 +300,75 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::TemporaryAction::matc
     return match;
 }
 
-CPP::Rules::LogCurrentCharacter::LogCurrentCharacter(Action action) : Rule(action) {}
+QParse::Rules::LogCurrentCharacter::LogCurrentCharacter(Action action) : Rule(action) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::LogCurrentCharacter::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::LogCurrentCharacter::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     IteratorMatcher::MatchData match;
     match.begin = iterator.current();
     match.matched = true;
     iterator.pushInfo();
     match.matches++;
     match.end = iterator.current();
-    if (iterator.enable_logging) CPP_RULES____COUT << "current character: " << Input::quote(iterator.peekNext()) CPP_RULES____COUT_ENDL;
+    if (iterator.enable_logging) QParse_RULES____COUT << "current character: " << Input::quote(iterator.peekNext()) QParse_RULES____COUT_ENDL;
     if (doAction) action(Input(iterator, match, undo, match.matches));
     return match;
 }
 
-CPP::Rules::LogMatchStatus::LogMatchStatus(Rule *rule, const CPP_RULES____STRING &ruleName, Action action) : RuleHolder(rule, action), ruleName(ruleName) {}
+QParse::Rules::LogMatchStatus::LogMatchStatus(Rule *rule, const QParse_RULES____STRING &ruleName, Action action) : RuleHolder(rule, action), ruleName(ruleName) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::LogMatchStatus::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::LogMatchStatus::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match_ = rule->match(iterator, undo, doAction);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
-    if (iterator.enable_logging) CPP_RULES____COUT << "rule '" << ruleName << "' was " << (match ? "matched" : "not matched") CPP_RULES____COUT_ENDL;
+    if (iterator.enable_logging) QParse_RULES____COUT << "rule '" << ruleName << "' was " << (match ? "matched" : "not matched") QParse_RULES____COUT_ENDL;
     if (doAction) action(Input(iterator, match, undo, match.matches));
     return match;
 }
 
-CPP::Rules::LogCapture::LogCapture(Rule *rule, const CPP_RULES____STRING &ruleName, Action action) : RuleHolder(rule, action), ruleName(ruleName) {}
+QParse::Rules::LogCapture::LogCapture(Rule *rule, const QParse_RULES____STRING &ruleName, Action action) : RuleHolder(rule, action), ruleName(ruleName) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::LogCapture::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::LogCapture::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match_ = rule->match(iterator, undo, doAction);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
     if (iterator.enable_logging) {
         if (match) {
-            CPP_RULES____COUT << "rule '" << ruleName << "' captured " << Input(iterator, match, undo, 0).quotedString() <<"\n" CPP_RULES____COUT_ENDL;
+            QParse_RULES____COUT << "rule '" << ruleName << "' captured " << Input(iterator, match, undo, 0).quotedString() <<"\n" QParse_RULES____COUT_ENDL;
         } else {
-            CPP_RULES____COUT << "rule '" << ruleName << "' did not capture anything because it did not match" <<"\n" CPP_RULES____COUT_ENDL;
+            QParse_RULES____COUT << "rule '" << ruleName << "' did not capture anything because it did not match" <<"\n" QParse_RULES____COUT_ENDL;
         }
     }
     if (doAction) action(Input(iterator, match, undo, match.matches));
     return match;
 }
 
-CPP::Rules::LogInput::LogInput(Rule *rule, const CPP_RULES____STRING &ruleName, Action action) : RuleHolder(rule, action), ruleName(ruleName) {}
+QParse::Rules::LogInput::LogInput(Rule *rule, const QParse_RULES____STRING &ruleName, Action action) : RuleHolder(rule, action), ruleName(ruleName) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::LogInput::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::LogInput::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match_ = rule->match(iterator, undo, doAction);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
-    if (iterator.enable_logging) CPP_RULES____COUT << "input after rule '" << ruleName << "' : " << iterator.currentString() CPP_RULES____COUT_ENDL;
+    if (iterator.enable_logging) QParse_RULES____COUT << "input after rule '" << ruleName << "' : " << iterator.currentString() QParse_RULES____COUT_ENDL;
     if (doAction) action(Input(iterator, match, undo, match.matches));
     return match;
 }
 
-CPP::Rules::LogTrace::LogTrace(Rule *rule, const CPP_RULES____STRING &ruleName, Action action) : RuleHolder(rule, action), ruleName(ruleName) {}
+QParse::Rules::LogTrace::LogTrace(Rule *rule, const QParse_RULES____STRING &ruleName, Action action) : RuleHolder(rule, action), ruleName(ruleName) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::LogTrace::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::LogTrace::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match_ = rule->match(iterator, undo, doAction);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
     if (iterator.enable_logging) {
-        CPP_RULES____COUT << "rule: " << ruleName CPP_RULES____COUT_ENDL;
-        CPP_RULES____COUT << "    match: " << (match ? "true" : "false") CPP_RULES____COUT_ENDL;
+        QParse_RULES____COUT << "rule: " << ruleName QParse_RULES____COUT_ENDL;
+        QParse_RULES____COUT << "    match: " << (match ? "true" : "false") QParse_RULES____COUT_ENDL;
         if (match) {
-            CPP_RULES____COUT << "    capture: " << Input(iterator, match, undo, 0).quotedString() CPP_RULES____COUT_ENDL;
+            QParse_RULES____COUT << "    capture: " << Input(iterator, match, undo, 0).quotedString() QParse_RULES____COUT_ENDL;
         }
-        CPP_RULES____COUT << "    input line: " CPP_RULES____COUT_ENDL;
+        QParse_RULES____COUT << "    input line: " QParse_RULES____COUT_ENDL;
         undo->print_error(iterator, "    ");
         undo->print([&](auto description) {
-            CPP_RULES____COUT_NO_SPACE << description CPP_RULES____COUT_ENDL;
+            QParse_RULES____COUT_NO_SPACE << description QParse_RULES____COUT_ENDL;
             undo->undo();
             undo->print_error(iterator, "    ");
         });
@@ -378,9 +378,9 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::LogTrace::match(Itera
     return match;
 }
 
-CPP::Rules::Optional::Optional(Rule *rule, Action action) : RuleHolder(rule, action) {}
+QParse::Rules::Optional::Optional(Rule *rule, Action action) : RuleHolder(rule, action) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Optional::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Optional::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     IteratorMatcher::MatchData match;
     match.begin = iterator.current();
     match.end = iterator.current();
@@ -398,9 +398,9 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Optional::match(Itera
     return match;
 }
 
-CPP::Rules::OneOrMore::OneOrMore(Rule *rule, Action action) : RuleHolder(rule, action) {}
+QParse::Rules::OneOrMore::OneOrMore(Rule *rule, Action action) : RuleHolder(rule, action) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::OneOrMore::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::OneOrMore::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match_ = rule->match(iterator, undo, doAction);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
@@ -419,9 +419,9 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::OneOrMore::match(Iter
     return match;
 }
 
-CPP::Rules::ZeroOrMore::ZeroOrMore(Rule *rule, Action action) : RuleHolder(new Optional(new OneOrMore(rule)), action) {}
+QParse::Rules::ZeroOrMore::ZeroOrMore(Rule *rule, Action action) : RuleHolder(new Optional(new OneOrMore(rule)), action) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::ZeroOrMore::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::ZeroOrMore::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match_ = rule->match(iterator, undo, doAction);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
@@ -431,9 +431,9 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::ZeroOrMore::match(Ite
     return match;
 }
 
-CPP::Rules::MatchBUntilA::MatchBUntilA(Rule *A, Rule *B, Action action) : Rule(action), A(A), B(B) {}
+QParse::Rules::MatchBUntilA::MatchBUntilA(Rule *A, Rule *B, Action action) : Rule(action), A(A), B(B) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::MatchBUntilA::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::MatchBUntilA::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     // until A matches, match B
     IteratorMatcher::MatchData match;
     match.begin = iterator.current();
@@ -462,13 +462,13 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::MatchBUntilA::match(I
     }
 }
 
-CPP::Rules::Or::Or(std::initializer_list<Rule *> rules, Action action) : Rule(action) {
+QParse::Rules::Or::Or(std::initializer_list<Rule *> rules, Action action) : Rule(action) {
     for (Rule * rule : rules) {
         this->rules.push_back(rule);
     }
 }
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Or::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Or::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     IteratorMatcher::MatchData match;
     match.begin = iterator.current();
     match.end = iterator.current();
@@ -492,13 +492,13 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Or::match(Iterator &i
     return match;
 }
 
-CPP::Rules::Sequence::Sequence(std::initializer_list<Rule *> rules, Action action) : Rule(action) {
+QParse::Rules::Sequence::Sequence(std::initializer_list<Rule *> rules, Action action) : Rule(action) {
     for (Rule * rule : rules) {
         this->rules.push_back(rule);
     }
 }
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Sequence::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Sequence::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     IteratorMatcher::MatchData match;
     match.begin = iterator.current();
     match.end = iterator.current();
@@ -529,9 +529,9 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Sequence::match(Itera
     return match;
 }
 
-CPP::Rules::Until::Until(Rule *rule, Action action) : RuleHolder(rule, action) {}
+QParse::Rules::Until::Until(Rule *rule, Action action) : RuleHolder(rule, action) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Until::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Until::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     return MatchBUntilA(new RuleHolder(rule), new AdvanceInputBy(1), action).match(iterator, undo, doAction);
     /*
     IteratorMatcher::MatchData match;
@@ -557,13 +557,13 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Until::match(Iterator
     */
 }
 
-CPP::Rules::Range::Range(std::initializer_list<char> letters, Action action) : Rule(action) {
+QParse::Rules::Range::Range(std::initializer_list<char> letters, Action action) : Rule(action) {
     for (char letter : letters) {
         this->letters += letter;
     }
 }
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Range::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Range::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     if (!iterator.has_next()) {
         // unexpected EOF
         return IteratorMatcher::MatchData(false);
@@ -572,13 +572,13 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Range::match(Iterator
     match.begin = iterator.current();
     match.end = iterator.current();
     iterator.pushInfo();
-    CPP_RULES____CHAR ch = iterator.next();
+    QParse_RULES____CHAR ch = iterator.next();
     Iterator l(letters);
     while (l.has_next()) {
-        CPP_RULES____CHAR low = l.next();
+        QParse_RULES____CHAR low = l.next();
         if (ch >= low) {
             if (l.has_next()) {
-                CPP_RULES____CHAR high = l.next();
+                QParse_RULES____CHAR high = l.next();
                 if (low != high && ch > high) {
                     continue;
                 }
@@ -599,9 +599,9 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Range::match(Iterator
     return match;
 }
 
-CPP::Rules::At::At(Rule *rule, Action action) : RuleHolder(rule, action) {}
+QParse::Rules::At::At(Rule *rule, Action action) : RuleHolder(rule, action) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::At::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::At::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     IteratorMatcher::MatchData match;
     match.begin = iterator.current();
     match.end = iterator.current();
@@ -631,9 +631,9 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::At::match(Iterator &i
     return match;
 }
 
-CPP::Rules::NotAt::NotAt(Rule *rule, Action action) : RuleHolder(rule, action) {}
+QParse::Rules::NotAt::NotAt(Rule *rule, Action action) : RuleHolder(rule, action) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::NotAt::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::NotAt::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     IteratorMatcher::MatchData match;
     match.begin = iterator.current();
     match.end = iterator.current();
@@ -664,11 +664,11 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::NotAt::match(Iterator
     return match;
 }
 
-CPP::Rules::UndoRedo::UndoRedo()
+QParse::Rules::UndoRedo::UndoRedo()
 {
 }
 
-CPP::Rules::UndoRedo::~UndoRedo()
+QParse::Rules::UndoRedo::~UndoRedo()
 {
     command = nullptr;
     for (Command *cmd : commandStack)
@@ -678,19 +678,19 @@ CPP::Rules::UndoRedo::~UndoRedo()
     commandStack = {};
 }
 
-void CPP::Rules::UndoRedo::disable_push_command()
+void QParse::Rules::UndoRedo::disable_push_command()
 {
     disable++;
 }
 
-void CPP::Rules::UndoRedo::enable_push_command()
+void QParse::Rules::UndoRedo::enable_push_command()
 {
     if (disable > 0) {
         disable--;
     }
 }
 
-void CPP::Rules::UndoRedo::push_command(const CPP_RULES____STRING & description)
+void QParse::Rules::UndoRedo::push_command(const QParse_RULES____STRING & description)
 {
     if (disable == 0) {
         command = new Command(this, description);
@@ -698,7 +698,7 @@ void CPP::Rules::UndoRedo::push_command(const CPP_RULES____STRING & description)
     }
 }
 
-void CPP::Rules::UndoRedo::print(Printer printer)
+void QParse::Rules::UndoRedo::print(Printer printer)
 {
     if (commandStack.empty()) return;
     size_t i_ = commandStack.size()-1;
@@ -723,7 +723,7 @@ void CPP::Rules::UndoRedo::print(Printer printer)
     }
 }
 
-bool CPP::Rules::UndoRedo::undo()
+bool QParse::Rules::UndoRedo::undo()
 {
     size_t count = commandStack.size();
     if (count == 0 || level >= count) return false;
@@ -752,7 +752,7 @@ bool CPP::Rules::UndoRedo::undo()
     return true;
 }
 
-bool CPP::Rules::UndoRedo::redo()
+bool QParse::Rules::UndoRedo::redo()
 {
     size_t count = commandStack.size();
     if (count == 0 || level <= 0) return false;
@@ -781,12 +781,12 @@ bool CPP::Rules::UndoRedo::redo()
     return true;
 }
 
-CPP::Rules::UndoRedo::Command::Command(UndoRedo *parent, const CPP_RULES____STRING & description) : parent(parent), description(description)
+QParse::Rules::UndoRedo::Command::Command(UndoRedo *parent, const QParse_RULES____STRING & description) : parent(parent), description(description)
 {
     this->commandStack.push_back(COMMAND::COMMAND__BUFFER);
 }
 
-CPP::Rules::UndoRedo::UNDO_KEY_PTR CPP::Rules::UndoRedo::Command::push_undo_iterator(Iterator &iter)
+QParse::Rules::UndoRedo::UNDO_KEY_PTR QParse::Rules::UndoRedo::Command::push_undo_iterator(Iterator &iter)
 {
     return push_undo_custom_data<std::pair<Iterator::SaveState, Iterator*>>("ITERATOR",
         { iter.save(), &iter },
@@ -796,7 +796,7 @@ CPP::Rules::UndoRedo::UNDO_KEY_PTR CPP::Rules::UndoRedo::Command::push_undo_iter
     );
 }
 
-void CPP::Rules::UndoRedo::Command::push_redo_iterator(CPP::Rules::UndoRedo::UNDO_KEY_PTR undo_key, Iterator &iter)
+void QParse::Rules::UndoRedo::Command::push_redo_iterator(QParse::Rules::UndoRedo::UNDO_KEY_PTR undo_key, Iterator &iter)
 {
     push_redo_custom_data<std::pair<Iterator::SaveState, Iterator*>>("ITERATOR",
         undo_key,
@@ -807,33 +807,33 @@ void CPP::Rules::UndoRedo::Command::push_redo_iterator(CPP::Rules::UndoRedo::UND
     );
 }
 
-CPP::Rules::UndoRedo::UNDO_KEY_PTR CPP::Rules::UndoRedo::Command::push_undo_string_replacement(CPP_RULES____STRING *input, const CPP_RULES____STRING::const_iterator &begin, const CPP_RULES____STRING::const_iterator &end, const CPP_RULES____STRING &replacement)
+QParse::Rules::UndoRedo::UNDO_KEY_PTR QParse::Rules::UndoRedo::Command::push_undo_string_replacement(QParse_RULES____STRING *input, const QParse_RULES____STRING::const_iterator &begin, const QParse_RULES____STRING::const_iterator &end, const QParse_RULES____STRING &replacement)
 {
     return push_undo_custom_data<
             std::pair<
-                std::pair<CPP_RULES____STRING*, CPP_RULES____STRING::difference_type>,
-                std::pair<CPP_RULES____STRING::difference_type, const CPP_RULES____STRING>
+                std::pair<QParse_RULES____STRING*, QParse_RULES____STRING::difference_type>,
+                std::pair<QParse_RULES____STRING::difference_type, const QParse_RULES____STRING>
             >
     >("STRING REPLACE " + replacement,
         {
             {input, begin - input->cbegin()}, {end - input->cbegin(), replacement}
         },
         [](auto data) {
-            CPP_RULES____STRING * a = data.first.first;
-            CPP_RULES____STRING::difference_type b = data.first.second;
-            CPP_RULES____STRING::difference_type c = data.second.first;
-            const CPP_RULES____STRING d = data.second.second;
-            CPP_RULES____STRING_REPLACE____STRING_PTR__ITERATOR_BEGIN__ITERATOR_END__STRING(a, a->cbegin() + b, a->cbegin() + c, d);
+            QParse_RULES____STRING * a = data.first.first;
+            QParse_RULES____STRING::difference_type b = data.first.second;
+            QParse_RULES____STRING::difference_type c = data.second.first;
+            const QParse_RULES____STRING d = data.second.second;
+            QParse_RULES____STRING_REPLACE____STRING_PTR__ITERATOR_BEGIN__ITERATOR_END__STRING(a, a->cbegin() + b, a->cbegin() + c, d);
         }
     );
 }
 
-void CPP::Rules::UndoRedo::Command::push_redo_string_replacement(CPP::Rules::UndoRedo::UNDO_KEY_PTR undo_key, CPP_RULES____STRING *input, const CPP_RULES____STRING::const_iterator &begin, const CPP_RULES____STRING::const_iterator &end, const CPP_RULES____STRING &replacement)
+void QParse::Rules::UndoRedo::Command::push_redo_string_replacement(QParse::Rules::UndoRedo::UNDO_KEY_PTR undo_key, QParse_RULES____STRING *input, const QParse_RULES____STRING::const_iterator &begin, const QParse_RULES____STRING::const_iterator &end, const QParse_RULES____STRING &replacement)
 {
     push_redo_custom_data<
             std::pair<
-                std::pair<CPP_RULES____STRING*, CPP_RULES____STRING::difference_type>,
-                std::pair<CPP_RULES____STRING::difference_type, const CPP_RULES____STRING>
+                std::pair<QParse_RULES____STRING*, QParse_RULES____STRING::difference_type>,
+                std::pair<QParse_RULES____STRING::difference_type, const QParse_RULES____STRING>
             >
     >("STRING REPLACE " + replacement,
         undo_key,
@@ -841,21 +841,21 @@ void CPP::Rules::UndoRedo::Command::push_redo_string_replacement(CPP::Rules::Und
             {input, begin - input->cbegin()}, {end - input->cbegin(), replacement}
         },
         [](auto data) {
-            CPP_RULES____STRING * a = data.first.first;
-            CPP_RULES____STRING::difference_type b = data.first.second;
-            CPP_RULES____STRING::difference_type c = data.second.first;
-            const CPP_RULES____STRING d = data.second.second;
-            CPP_RULES____STRING_REPLACE____STRING_PTR__ITERATOR_BEGIN__ITERATOR_END__STRING(a, a->cbegin() + b, a->cbegin() + c, d);
+            QParse_RULES____STRING * a = data.first.first;
+            QParse_RULES____STRING::difference_type b = data.first.second;
+            QParse_RULES____STRING::difference_type c = data.second.first;
+            const QParse_RULES____STRING d = data.second.second;
+            QParse_RULES____STRING_REPLACE____STRING_PTR__ITERATOR_BEGIN__ITERATOR_END__STRING(a, a->cbegin() + b, a->cbegin() + c, d);
         }
     );
 }
 
-CPP::Rules::UndoRedo::UNDO_KEY_PTR CPP::Rules::UndoRedo::Command::push_undo_string_insertion(CPP_RULES____STRING *input, const CPP_RULES____STRING::const_iterator &begin, const CPP_RULES____STRING::const_iterator &end)
+QParse::Rules::UndoRedo::UNDO_KEY_PTR QParse::Rules::UndoRedo::Command::push_undo_string_insertion(QParse_RULES____STRING *input, const QParse_RULES____STRING::const_iterator &begin, const QParse_RULES____STRING::const_iterator &end)
 {
     return push_undo_custom_data<
             std::pair<
-                std::pair<CPP_RULES____STRING*, CPP_RULES____STRING::difference_type>,
-                CPP_RULES____STRING::difference_type
+                std::pair<QParse_RULES____STRING*, QParse_RULES____STRING::difference_type>,
+                QParse_RULES____STRING::difference_type
             >
     >("STRING INSERT",
         {
@@ -863,20 +863,20 @@ CPP::Rules::UndoRedo::UNDO_KEY_PTR CPP::Rules::UndoRedo::Command::push_undo_stri
             end - input->cbegin()
         },
         [](auto data) {
-            CPP_RULES____STRING * a = data.first.first;
-            CPP_RULES____STRING::difference_type b = data.first.second;
-            CPP_RULES____STRING::difference_type c = data.second;
-            CPP_RULES____STRING_REPLACE____STRING_PTR__ITERATOR_BEGIN__ITERATOR_END__STRING(a, a->cbegin() + b, a->cbegin() + c, "");
+            QParse_RULES____STRING * a = data.first.first;
+            QParse_RULES____STRING::difference_type b = data.first.second;
+            QParse_RULES____STRING::difference_type c = data.second;
+            QParse_RULES____STRING_REPLACE____STRING_PTR__ITERATOR_BEGIN__ITERATOR_END__STRING(a, a->cbegin() + b, a->cbegin() + c, "");
         }
     );
 }
 
-void CPP::Rules::UndoRedo::Command::push_redo_string_insertion(CPP::Rules::UndoRedo::UNDO_KEY_PTR undo_key, CPP_RULES____STRING *input, const CPP_RULES____STRING::const_iterator &end, const CPP_RULES____STRING &replacement)
+void QParse::Rules::UndoRedo::Command::push_redo_string_insertion(QParse::Rules::UndoRedo::UNDO_KEY_PTR undo_key, QParse_RULES____STRING *input, const QParse_RULES____STRING::const_iterator &end, const QParse_RULES____STRING &replacement)
 {
     push_redo_custom_data<
             std::pair<
-                std::pair<CPP_RULES____STRING*, CPP_RULES____STRING::difference_type>,
-                const CPP_RULES____STRING
+                std::pair<QParse_RULES____STRING*, QParse_RULES____STRING::difference_type>,
+                const QParse_RULES____STRING
             >
     >("STRING INSERT " + replacement,
         undo_key,
@@ -885,16 +885,16 @@ void CPP::Rules::UndoRedo::Command::push_redo_string_insertion(CPP::Rules::UndoR
             replacement
         },
         [](auto data) {
-            CPP_RULES____STRING * a = data.first.first;
-            CPP_RULES____STRING::difference_type b = data.first.second;
-            const CPP_RULES____STRING c = data.second;
-            CPP_RULES____STRING_INSERT____STRING_PTR__INTEGER__STRING(a, b, c);
+            QParse_RULES____STRING * a = data.first.first;
+            QParse_RULES____STRING::difference_type b = data.first.second;
+            const QParse_RULES____STRING c = data.second;
+            QParse_RULES____STRING_INSERT____STRING_PTR__INTEGER__STRING(a, b, c);
         }
     );
 }
 
 
-CPP::Rules::UndoRedo::Command::CustomDataStack::~CustomDataStack() {
+QParse::Rules::UndoRedo::Command::CustomDataStack::~CustomDataStack() {
     for(auto p : stack) {
         if (p != nullptr) {
             p->deleter(p->data); // invoke deleter
@@ -907,7 +907,7 @@ CPP::Rules::UndoRedo::Command::CustomDataStack::~CustomDataStack() {
     }
 }
 
-bool CPP::Rules::UndoRedo::Command::CustomDataStack::undo() {
+bool QParse::Rules::UndoRedo::Command::CustomDataStack::undo() {
     size_t count = stack.size();
     if (count == 0 || level >= count) return false;
 
@@ -919,7 +919,7 @@ bool CPP::Rules::UndoRedo::Command::CustomDataStack::undo() {
     return true;
 }
 
-bool CPP::Rules::UndoRedo::Command::CustomDataStack::redo() {
+bool QParse::Rules::UndoRedo::Command::CustomDataStack::redo() {
     size_t count = stack.size();
     if (count == 0 || level <= 0) return false;
 

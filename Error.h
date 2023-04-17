@@ -1,9 +1,9 @@
 #include "Iterator.h"
 
-#ifndef CPP_RULES_ERROR2
-#ifndef CPP_RULES_ERROR1_H
-#define CPP_RULES_ERROR1_H
-namespace CPP {
+#ifndef QParse_RULES_ERROR2
+#ifndef QParse_RULES_ERROR1_H
+#define QParse_RULES_ERROR1_H
+namespace QParse {
     namespace Rules {
 
         // this is used to implement the error reporting system
@@ -33,14 +33,14 @@ namespace CPP {
 
                     struct LinkData {
                         bool is_undo = false;
-                        CPP_RULES____STRING TAG;
+                        QParse_RULES____STRING TAG;
                         std::function<void(void*)> invoker;
                         void * data = nullptr;
                         std::function<void(void*)> deleter;
                         LinkData * redo = nullptr;
                     };
 
-                    CPP_RULES____VECTOR <LinkData*> stack;
+                    QParse_RULES____VECTOR <LinkData*> stack;
 
                     ~CustomDataStack();
 
@@ -49,29 +49,29 @@ namespace CPP {
                 };
 
                 UndoRedo * parent;
-                CPP_RULES____VECTOR <COMMAND> commandStack;
+                QParse_RULES____VECTOR <COMMAND> commandStack;
                 CustomDataStack customStack;
 
             public:
-                CPP_RULES____STRING description;
-                Command(UndoRedo * parent, const CPP_RULES____STRING & description);
+                QParse_RULES____STRING description;
+                Command(UndoRedo * parent, const QParse_RULES____STRING & description);
 
                 UNDO_KEY_PTR push_undo_iterator(Iterator & iter);
-                UNDO_KEY_PTR push_undo_string_replacement(CPP_RULES____STRING * input, const CPP_RULES____STRING::const_iterator & begin, const CPP_RULES____STRING::const_iterator & end, const CPP_RULES____STRING & replacement);
-                UNDO_KEY_PTR push_undo_string_insertion(CPP_RULES____STRING * input, const CPP_RULES____STRING::const_iterator & begin, const CPP_RULES____STRING::const_iterator & end);
+                UNDO_KEY_PTR push_undo_string_replacement(QParse_RULES____STRING * input, const QParse_RULES____STRING::const_iterator & begin, const QParse_RULES____STRING::const_iterator & end, const QParse_RULES____STRING & replacement);
+                UNDO_KEY_PTR push_undo_string_insertion(QParse_RULES____STRING * input, const QParse_RULES____STRING::const_iterator & begin, const QParse_RULES____STRING::const_iterator & end);
 
                 void push_redo_iterator(UNDO_KEY_PTR undo_key, Iterator &iter);
-                void push_redo_string_replacement(UNDO_KEY_PTR undo_key, CPP_RULES____STRING * input, const CPP_RULES____STRING::const_iterator & begin, const CPP_RULES____STRING::const_iterator & end, const CPP_RULES____STRING & replacement);
-                void push_redo_string_insertion(UNDO_KEY_PTR undo_key, CPP_RULES____STRING * input, const CPP_RULES____STRING::const_iterator & end, const CPP_RULES____STRING & insertion);
+                void push_redo_string_replacement(UNDO_KEY_PTR undo_key, QParse_RULES____STRING * input, const QParse_RULES____STRING::const_iterator & begin, const QParse_RULES____STRING::const_iterator & end, const QParse_RULES____STRING & replacement);
+                void push_redo_string_insertion(UNDO_KEY_PTR undo_key, QParse_RULES____STRING * input, const QParse_RULES____STRING::const_iterator & end, const QParse_RULES____STRING & insertion);
 
 
                 template <typename T>
-                UNDO_KEY_PTR push_undo_custom_data(CPP_RULES____STRING tag, T args, std::function<void(T)> func) {
+                UNDO_KEY_PTR push_undo_custom_data(QParse_RULES____STRING tag, T args, std::function<void(T)> func) {
                     commandStack.push_back(COMMAND::SUB_COMMAND__UNDO_CUSTOM_DATA);
 
                     CustomDataStack::LinkData * undo = new CustomDataStack::LinkData();
                     undo->is_undo = true;
-                    undo->TAG = CPP_RULES____STRING("UNDO ") + tag;
+                    undo->TAG = QParse_RULES____STRING("UNDO ") + tag;
                     undo->invoker = [](void * data) {
                         typedef std::pair<T, std::function<void(T)>> FUNC;
                         FUNC * func = static_cast<FUNC*>(data);
@@ -84,14 +84,14 @@ namespace CPP {
                 }
 
                 template <typename T>
-                void push_redo_custom_data(CPP_RULES____STRING tag, UNDO_KEY_PTR undo_key, T args, std::function<void(T)> func) {
+                void push_redo_custom_data(QParse_RULES____STRING tag, UNDO_KEY_PTR undo_key, T args, std::function<void(T)> func) {
                     commandStack.push_back(COMMAND::SUB_COMMAND__REDO_CUSTOM_DATA);
 
                     CustomDataStack::LinkData * undo = static_cast<CustomDataStack::LinkData*>(undo_key);
 
                     undo->redo = new CustomDataStack::LinkData();
                     undo->redo->is_undo = false;
-                    undo->redo->TAG = CPP_RULES____STRING("REDO ") + tag;
+                    undo->redo->TAG = QParse_RULES____STRING("REDO ") + tag;
                     undo->redo->invoker = [](void * data) {
                         typedef std::pair<T, std::function<void(T)>> FUNC;
                         FUNC * func = static_cast<FUNC*>(data);
@@ -103,7 +103,7 @@ namespace CPP {
             };
 
         private:
-            CPP_RULES____VECTOR <Command*> commandStack;
+            QParse_RULES____VECTOR <Command*> commandStack;
             int disable = 0;
             size_t level = 0;
         public:
@@ -115,9 +115,9 @@ namespace CPP {
             void disable_push_command();
             void enable_push_command();
 
-            using Printer = std::function<void(const CPP_RULES____STRING & description)>;
+            using Printer = std::function<void(const QParse_RULES____STRING & description)>;
 
-            void push_command(const CPP_RULES____STRING & description);
+            void push_command(const QParse_RULES____STRING & description);
             void print(Printer printer);
             bool undo();
             bool redo();
@@ -126,21 +126,21 @@ namespace CPP {
     }
 }
 
-#endif // CPP_RULES_ERROR1_H
-#endif // ifndef CPP_RULES_ERROR2
+#endif // QParse_RULES_ERROR1_H
+#endif // ifndef QParse_RULES_ERROR2
 
-#ifdef CPP_RULES_ERROR2
-#ifndef CPP_RULES_ERROR2_H
-#define CPP_RULES_ERROR2_H
-namespace CPP {
+#ifdef QParse_RULES_ERROR2
+#ifndef QParse_RULES_ERROR2_H
+#define QParse_RULES_ERROR2_H
+namespace QParse {
     namespace Rules {
 
-        void printError(const CPP_RULES____STRING & message, Iterator & iterator, UndoRedo & undo);
+        void printError(const QParse_RULES____STRING & message, Iterator & iterator, UndoRedo & undo);
 
         struct Error : Rule {
-            CPP_RULES____STRING message;
+            QParse_RULES____STRING message;
 
-            Error(const CPP_RULES____STRING &message, Action action = NO_ACTION);
+            Error(const QParse_RULES____STRING &message, Action action = NO_ACTION);
 
             using Rule::match;
 
@@ -151,9 +151,9 @@ namespace CPP {
 #ifdef GTEST_API_
             public:
 #endif
-            CPP_RULES____STRING message;
+            QParse_RULES____STRING message;
         public:
-            ErrorIfMatch(Rule *rule, const CPP_RULES____STRING & message, Action action = NO_ACTION);
+            ErrorIfMatch(Rule *rule, const QParse_RULES____STRING & message, Action action = NO_ACTION);
 
             using Rule::match;
 
@@ -165,9 +165,9 @@ namespace CPP {
 #ifdef GTEST_API_
             public:
 #endif
-            CPP_RULES____STRING message;
+            QParse_RULES____STRING message;
         public:
-            ErrorIfNotMatch(Rule *rule, const CPP_RULES____STRING & message, Action action = NO_ACTION);
+            ErrorIfNotMatch(Rule *rule, const QParse_RULES____STRING & message, Action action = NO_ACTION);
 
             using Rule::match;
 
@@ -177,5 +177,5 @@ namespace CPP {
 
     }
 }
-#endif // CPP_RULES_ERROR2_H
-#endif // CPP_RULES_ERROR2
+#endif // QParse_RULES_ERROR2_H
+#endif // QParse_RULES_ERROR2

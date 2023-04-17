@@ -1,9 +1,9 @@
-#ifndef CPP_RULES_CONDITIONAL_H
-#define CPP_RULES_CONDITIONAL_H
+#ifndef QParse_RULES_CONDITIONAL_H
+#define QParse_RULES_CONDITIONAL_H
 
 #include "Rules.h"
 
-namespace CPP {
+namespace QParse {
     namespace Rules {
 
     using Condition = std::function<bool()>;
@@ -49,4 +49,4 @@ namespace CPP {
     }
 }
 
-#endif // CPP_RULES_CONDITIONAL_H
+#endif // QParse_RULES_CONDITIONAL_H

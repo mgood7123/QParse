@@ -1,15 +1,15 @@
 #include "IteratorMatcher.h"
 
 
-CPP::IteratorMatcher::MatchData::MatchData() : matched(false) {}
+QParse::IteratorMatcher::MatchData::MatchData() : matched(false) {}
 
-CPP::IteratorMatcher::MatchData::MatchData(bool matched) : matched(matched) {}
+QParse::IteratorMatcher::MatchData::MatchData(bool matched) : matched(matched) {}
 
-CPP::IteratorMatcher::MatchData::operator bool() const noexcept {
+QParse::IteratorMatcher::MatchData::operator bool() const noexcept {
     return matched;
 }
 
-CPP::IteratorMatcher::MatchData CPP::IteratorMatcher::match(Iterator &i) {
+QParse::IteratorMatcher::MatchData QParse::IteratorMatcher::match(Iterator &i) {
     MatchData matchData;
     matchData.begin = i.current();
     matchData.end = i.current();
@@ -26,7 +26,7 @@ CPP::IteratorMatcher::MatchData CPP::IteratorMatcher::match(Iterator &i) {
     return matchData;
 }
 
-CPP::IteratorMatcher::MatchData CPP::IteratorMatcher::match(Iterator &i, char value) {
+QParse::IteratorMatcher::MatchData QParse::IteratorMatcher::match(Iterator &i, char value) {
     MatchData matchData;
     matchData.begin = i.current();
     matchData.end = i.current();
@@ -47,7 +47,7 @@ CPP::IteratorMatcher::MatchData CPP::IteratorMatcher::match(Iterator &i, char va
     return matchData;
 }
 
-CPP::IteratorMatcher::MatchData CPP::IteratorMatcher::match(Iterator &i, CPP_RULES____STRING &value) {
+QParse::IteratorMatcher::MatchData QParse::IteratorMatcher::match(Iterator &i, QParse_RULES____STRING &value) {
     MatchData matchData;
     matchData.begin = i.current();
     matchData.end = i.current();
@@ -112,7 +112,7 @@ CPP::IteratorMatcher::MatchData CPP::IteratorMatcher::match(Iterator &i, CPP_RUL
     }
 }
 
-CPP::IteratorMatcher::MatchData CPP::IteratorMatcher::match(Iterator &i, const CPP_RULES____STRING &value) {
-    CPP_RULES____STRING tmp = value;
+QParse::IteratorMatcher::MatchData QParse::IteratorMatcher::match(Iterator &i, const QParse_RULES____STRING &value) {
+    QParse_RULES____STRING tmp = value;
     return match(i, tmp);
 }

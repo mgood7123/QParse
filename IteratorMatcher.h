@@ -1,16 +1,16 @@
-#ifndef CPP_ITERATOR_MATCHER_H
-#define CPP_ITERATOR_MATCHER_H
+#ifndef QParse_ITERATOR_MATCHER_H
+#define QParse_ITERATOR_MATCHER_H
 
 #include "Iterator.h"
 
-namespace CPP {
+namespace QParse {
     namespace IteratorMatcher {
 
         struct MatchData {
             bool matched;
             int matches = 0;
-            CPP_RULES____STRING::const_iterator begin;
-            CPP_RULES____STRING::const_iterator end;
+            QParse_RULES____STRING::const_iterator begin;
+            QParse_RULES____STRING::const_iterator end;
             MatchData();
             MatchData(bool matched);
             operator bool() const noexcept;
@@ -22,26 +22,26 @@ namespace CPP {
         // optimize for single character match
         MatchData match(Iterator & i, char value);
 
-        MatchData match(Iterator & i, CPP_RULES____STRING &value);
+        MatchData match(Iterator & i, QParse_RULES____STRING &value);
 
-        MatchData match(Iterator & i, const CPP_RULES____STRING &value);
+        MatchData match(Iterator & i, const QParse_RULES____STRING &value);
     }
 }
 
 #ifdef GTEST_API_
 TEST(Initialization_IteratorMatcher_MatchData, test_initialization) {
-    CPP::IteratorMatcher::MatchData matchData;
+    QParse::IteratorMatcher::MatchData matchData;
     EXPECT_FALSE(matchData.matched);
     EXPECT_FALSE(matchData);
-    EXPECT_EQ(matchData.begin, CPP_RULES____STRING::const_iterator());
-    EXPECT_EQ(matchData.end, CPP_RULES____STRING::const_iterator());
+    EXPECT_EQ(matchData.begin, QParse_RULES____STRING::const_iterator());
+    EXPECT_EQ(matchData.end, QParse_RULES____STRING::const_iterator());
     EXPECT_EQ(matchData.matches, 0);
 }
 
 TEST(IteratorMatcher, test_01) {
-    CPP_RULES____STRING a = "Hello World!";
-    CPP::Iterator<CPP_RULES____STRING> b(a);
-    CPP::IteratorMatcher::MatchData matchData = CPP::IteratorMatcher::match(b);
+    QParse_RULES____STRING a = "Hello World!";
+    QParse::Iterator<QParse_RULES____STRING> b(a);
+    QParse::IteratorMatcher::MatchData matchData = QParse::IteratorMatcher::match(b);
     EXPECT_TRUE(matchData.matched);
     EXPECT_TRUE(matchData);
     EXPECT_EQ(matchData.begin, b.cbegin());
@@ -52,9 +52,9 @@ TEST(IteratorMatcher, test_01) {
 }
 
 TEST(IteratorMatcher, test_02) {
-    CPP_RULES____STRING a = "Hello World!";
-    CPP::Iterator<CPP_RULES____STRING> b(a);
-    CPP::IteratorMatcher::MatchData matchData = CPP::IteratorMatcher::match(b, 'H');
+    QParse_RULES____STRING a = "Hello World!";
+    QParse::Iterator<QParse_RULES____STRING> b(a);
+    QParse::IteratorMatcher::MatchData matchData = QParse::IteratorMatcher::match(b, 'H');
     EXPECT_TRUE(matchData.matched);
     EXPECT_TRUE(matchData);
     EXPECT_EQ(matchData.begin, b.cbegin());
@@ -65,10 +65,10 @@ TEST(IteratorMatcher, test_02) {
 }
 
 TEST(IteratorMatcher, test_03) {
-    CPP_RULES____STRING a = "Hello World!";
-    CPP::Iterator<CPP_RULES____STRING> b(a);
-    CPP::IteratorMatcher::MatchData matchData = CPP::IteratorMatcher::match(b, 'H');
-    CPP::IteratorMatcher::MatchData matchData2 = CPP::IteratorMatcher::match(b, 'e');
+    QParse_RULES____STRING a = "Hello World!";
+    QParse::Iterator<QParse_RULES____STRING> b(a);
+    QParse::IteratorMatcher::MatchData matchData = QParse::IteratorMatcher::match(b, 'H');
+    QParse::IteratorMatcher::MatchData matchData2 = QParse::IteratorMatcher::match(b, 'e');
     EXPECT_TRUE(matchData2.matched);
     EXPECT_TRUE(matchData2);
     EXPECT_EQ(matchData2.begin, b.cbegin()+1);
@@ -79,10 +79,10 @@ TEST(IteratorMatcher, test_03) {
 }
 
 TEST(IteratorMatcher, test_04) {
-    CPP_RULES____STRING a = "Hello World!";
-    CPP::Iterator<CPP_RULES____STRING> b(a);
-    CPP::IteratorMatcher::MatchData matchData = CPP::IteratorMatcher::match(b, 'H');
-    CPP::IteratorMatcher::MatchData matchData2 = CPP::IteratorMatcher::match(b, 'r');
+    QParse_RULES____STRING a = "Hello World!";
+    QParse::Iterator<QParse_RULES____STRING> b(a);
+    QParse::IteratorMatcher::MatchData matchData = QParse::IteratorMatcher::match(b, 'H');
+    QParse::IteratorMatcher::MatchData matchData2 = QParse::IteratorMatcher::match(b, 'r');
     EXPECT_TRUE(matchData.matched);
     EXPECT_TRUE(matchData);
     EXPECT_EQ(matchData.begin, b.cbegin());
@@ -98,11 +98,11 @@ TEST(IteratorMatcher, test_04) {
 }
 
 TEST(IteratorMatcher_backtracking, test_01) {
-    CPP_RULES____STRING a = "Hello World!";
-    CPP::Iterator<CPP_RULES____STRING> b(a);
+    QParse_RULES____STRING a = "Hello World!";
+    QParse::Iterator<QParse_RULES____STRING> b(a);
     b.pushIterator();
-    CPP::IteratorMatcher::MatchData matchData = CPP::IteratorMatcher::match(b, 'H');
-    CPP::IteratorMatcher::MatchData matchData2 = CPP::IteratorMatcher::match(b, 'r');
+    QParse::IteratorMatcher::MatchData matchData = QParse::IteratorMatcher::match(b, 'H');
+    QParse::IteratorMatcher::MatchData matchData2 = QParse::IteratorMatcher::match(b, 'r');
     b.popIterator();
     EXPECT_TRUE(matchData.matched);
     EXPECT_TRUE(matchData);
@@ -114,9 +114,9 @@ TEST(IteratorMatcher_backtracking, test_01) {
 }
 
 TEST(IteratorMatcher_backtracking, test_02) {
-    CPP_RULES____STRING a = "Hello World!";
-    CPP::Iterator<CPP_RULES____STRING> b(a);
-    CPP::IteratorMatcher::MatchData matchData = CPP::IteratorMatcher::match(b, 'H');
+    QParse_RULES____STRING a = "Hello World!";
+    QParse::Iterator<QParse_RULES____STRING> b(a);
+    QParse::IteratorMatcher::MatchData matchData = QParse::IteratorMatcher::match(b, 'H');
     b.popIterator(matchData.matches);
     EXPECT_EQ(b.currentPosition(), 0);
     EXPECT_EQ(b.peekNext(), 'H');

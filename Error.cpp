@@ -1,34 +1,34 @@
 #include "Rules.h"
-#include CPP_RULES____COUT_INCLUDE
+#include QParse_RULES____COUT_INCLUDE
 
-void CPP::Rules::UndoRedo::print_error(Iterator & iterator, const char * indent) {
-    CPP_RULES____COUT_NO_SPACE << indent << "  at source:" << iterator.line() << ":" << iterator.column() << " (index " << iterator.currentPosition() << ") :" CPP_RULES____COUT_ENDL;
-    CPP_RULES____COUT_NO_SPACE_NO_QUOTE << indent << "    input: \"" << iterator.lineString() << "\"" CPP_RULES____COUT_ENDL;
+void QParse::Rules::UndoRedo::print_error(Iterator & iterator, const char * indent) {
+    QParse_RULES____COUT_NO_SPACE << indent << "  at source:" << iterator.line() << ":" << iterator.column() << " (index " << iterator.currentPosition() << ") :" QParse_RULES____COUT_ENDL;
+    QParse_RULES____COUT_NO_SPACE_NO_QUOTE << indent << "    input: \"" << iterator.lineString() << "\"" QParse_RULES____COUT_ENDL;
 
-    CPP_RULES____STRING pre = "           ";
-    CPP_RULES____STRING_APPEND(spacing, " ", iterator.column());
-    CPP_RULES____STRING cursor = spacing + "^";
-    CPP_RULES____STRING full_cursor = pre + spacing + "^";
+    QParse_RULES____STRING pre = "           ";
+    QParse_RULES____STRING_APPEND(spacing, " ", iterator.column());
+    QParse_RULES____STRING cursor = spacing + "^";
+    QParse_RULES____STRING full_cursor = pre + spacing + "^";
 
-    CPP_RULES____COUT_NO_SPACE_NO_QUOTE << indent << full_cursor CPP_RULES____COUT_ENDL;
-    CPP_RULES____COUT_NO_SPACE << "" CPP_RULES____COUT_ENDL;
+    QParse_RULES____COUT_NO_SPACE_NO_QUOTE << indent << full_cursor QParse_RULES____COUT_ENDL;
+    QParse_RULES____COUT_NO_SPACE << "" QParse_RULES____COUT_ENDL;
 }
 
-void CPP::Rules::printError(const CPP_RULES____STRING & message, Iterator & iterator, UndoRedo & undo)
+void QParse::Rules::printError(const QParse_RULES____STRING & message, Iterator & iterator, UndoRedo & undo)
 {
-    CPP_RULES____COUT_NO_SPACE << "ERROR: " << message CPP_RULES____COUT_ENDL;
+    QParse_RULES____COUT_NO_SPACE << "ERROR: " << message QParse_RULES____COUT_ENDL;
     undo.print_error(iterator);
     undo.print([&](auto description) {
-        CPP_RULES____COUT_NO_SPACE << description CPP_RULES____COUT_ENDL;
+        QParse_RULES____COUT_NO_SPACE << description QParse_RULES____COUT_ENDL;
         undo.undo();
         undo.print_error(iterator);
     });
 }
 
 
-CPP::Rules::Error::Error(const CPP_RULES____STRING &message, Action action) : Rule(action), message(message) {}
+QParse::Rules::Error::Error(const QParse_RULES____STRING &message, Action action) : Rule(action), message(message) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Error::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Error::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     IteratorMatcher::MatchData match;
     match.begin = iterator.current();
     match.end = iterator.current();
@@ -39,9 +39,9 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::Error::match(Iterator
     return std::nullopt;
 }
 
-CPP::Rules::ErrorIfMatch::ErrorIfMatch(Rule *rule, const CPP_RULES____STRING &message, Action action) : RuleHolder(rule, action), message(message) {}
+QParse::Rules::ErrorIfMatch::ErrorIfMatch(Rule *rule, const QParse_RULES____STRING &message, Action action) : RuleHolder(rule, action), message(message) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::ErrorIfMatch::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::ErrorIfMatch::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match_ = rule->match(iterator, undo, doAction);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
@@ -54,9 +54,9 @@ std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::ErrorIfMatch::match(I
     return match;
 }
 
-CPP::Rules::ErrorIfNotMatch::ErrorIfNotMatch(Rule *rule, const CPP_RULES____STRING &message, Action action) : RuleHolder(rule, action), message(message) {}
+QParse::Rules::ErrorIfNotMatch::ErrorIfNotMatch(Rule *rule, const QParse_RULES____STRING &message, Action action) : RuleHolder(rule, action), message(message) {}
 
-std::optional<CPP::IteratorMatcher::MatchData> CPP::Rules::ErrorIfNotMatch::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::ErrorIfNotMatch::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
     auto match_ = rule->match(iterator, undo, doAction);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
