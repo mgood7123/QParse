@@ -54,7 +54,9 @@ namespace QParse {
     #endif
             void replace_(const QParse_RULES____STRING & string);
 
+    #ifndef GTEST_API_
         public:
+    #endif
             void replace(const QParse_RULES____STRING & string);
 
             void replaceAndRescan(const char & character);

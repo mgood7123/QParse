@@ -367,7 +367,11 @@ Iterator iter = "some string";
 
 we then create a `Grammar`
 
+# Rule
+
 a `Grammar` is a set of `Rule` objects that define the `Grammar Definition`
+
+all rule objects accept an `ACTION` in the form of the following lambda: `[&] (QParse::Rules::Input input) { code_here(); }`, or `std::function<void, QParse::Rules::Input>`
 
 these are sometimes called `expressions` as they `express` how you want to parse something
 
@@ -415,8 +419,9 @@ you may notice we do not delete `text` or `space`, this is because each `Rules::
 
 ```
 
-this is done via a hidden `RuleHolder*` object
+this is done via a hidden `RuleHolder*` 
 
+# RuleHolder
 a `RuleHolder` object extends `Rule`, and manages the lifetime of a `Rule` object via `reference counting`
 
 this makes it possible to use a `Rule` in multiple places without worrying about `dangling references` or `use-after-free`
@@ -430,8 +435,169 @@ a `RuleHolder` can only contain one `Rule` at a time
 
 we will cover some advance topics such as `conditional expressions`, `stack expressions`, `error reporting`, and `input modification` later
 
-## Capabilities
+## capabilities
 
-TODO: document all capabilities
+#### Rule
+see above
 
-look in `Rules.h`, `Error.h`, `Conditionals.h`, and `Stack.h`
+#### RuleHolder
+see above
+
+unless explicitly stated, all rules fail if they encounter EOF
+
+#### Error
+fails the entire rule, except if inside an `Or`, `Optional`, or `At` rules
+
+any further execution is haulted, and the input stack is unwound
+
+#### ErrorIf*Match
+same as `Error` but conditionally
+
+#### EndOfFile
+explicitly matches against `EOF` (succeeds if and ONLY if `EOF` is encountered)
+
+#### Newline
+matches if either `\n` or `\r\n` are encountered
+
+#### NewlineOrEOF
+matches if either `Newline` or `EOF` are encountered 
+
+#### Success
+self explanatory, the rule itself always succeeds, even at EOF
+
+#### Fail
+self explanatory, the rule itself always fails
+
+#### Char
+accepts a single character `'c'`, use this for matching individual characters or hexadecimal
+
+#### Range
+matches `characters` in a range
+
+syntax is as follows
+
+one or more pairs of [`start`, `end`]
+
+may end with an `extra character`, as if `or [ [ range ... ], [ 'extra character' ] ]`
+
+#### String
+accepts a string of characters `"string"`, use this for matching individual strings or character/hexadecimal sequences
+
+#### Any
+matches and consumes any input
+
+#### AdvanceInputBy
+advances the input by `N` characters, this is faster than `Any` as it can skip multiple characters in a single go
+
+#### TemporaryAction
+temporarily overrides the action of the specified rule, prevents all other actions from executing within the rule
+
+```
+TemporaryAction B1
+  TemporaryAction B2
+    TemporaryAction B3
+```
+
+only `B1` will run, if an `Error` is encountered, it will not log anything (due to `At` semantics of action execution)
+
+#### At
+executes the given `rule` but does not consume any input and does not execute any actions, no errors are logged
+
+#### NotAt
+executes the given `rule` but does not consume any input and does not execute any actions, no errors are logged
+
+fails if the given rule succeeds, succeeds if the given rule fails
+
+#### Optional
+always matches regardless of if the given `Rule` matches or not, any `Error` rules will execute as normal
+
+#### Log*
+various rules for logging information about the current given rule
+
+#### LogTrace
+combines all Log* into a single rule
+
+#### ZeroOrMore
+keps matching until the given rule fails to match
+
+#### OneOrMore
+matches if the given rule matches at least once, and keeps matching until the given rule fails to match
+
+#### MatchBUntilA
+matches rule B until rule A is matched
+
+```
+1. A is matched, if A succeeds, the rule succeeds
+2. if A fails, B is matched
+3. if B succeds, go to 1
+4. if B fails to match, the rule fails
+```
+
+#### Or
+matches if any of the given rules match, any `Error` rules will execute as normal
+
+#### Sequence
+matches only if all of the given rules match
+
+#### Until
+advances the input by 1 until the given rule matches
+
+
+
+## advanced capabilities
+
+#### if
+an `if statement` in the form of a `Rule`
+
+syntax: `if([&] { return CONDITION; }, RTrue, RFalse)`
+
+use this to conditionally execute rules based on conditional input thay may be determined by executed actions or outside factors such as threads or input variables
+
+#### Stack
+a `Rule` stack, use `setBase` to set the base rule, and an optional action
+
+use `push` to push to the top of the stack
+
+use `pop/popAll` to pop from top of the stack
+
+the top most rule is executed
+
+it is an error to have a `nullptr` base
+
+### Input Modification and Rescan
+
+a powerful feature of `QParse` is its `input modification` and `rescan` capabilities
+
+`input modification` and `rescan` are done via `actions`, specifically the `Input` object that is passed to every `ACTION` argument
+
+this works based on `captured` input, if a rule succeeds, it will capture any input it sees, otherwise it will capture nothing
+
+note that a capture of nothing is itself a valid capture
+
+the input stream can be modified in the following ways:
+
+#### rescan
+rescans the input stream starting at the beginning of the capture
+
+if you capture `a`, and the input is `ab`, then it will rescan `a` on the next rule, and then `b` on the next rule, depending on the rule
+
+#### erase and rescan
+removes the captured input from the input stream and then rescans
+
+#### replace
+replaces the captured input with a `character` or a `string`, then continues from the start of the next character at the end of the replacement
+
+the replacement can be `smaller` or `larger` than the `capture`
+
+if you capture `ab` and replace it with `f`, and the input is `abcd`, then it will transform the input into `fcd` and then continue at `c` on the next rule, and then `d` on the next rule, depending on the rule
+
+#### replace and rescan
+same as doing `replace` and then `rescan`, with above, it will continue at `f` on the next rule, and then `c` on the next rule, depending on the rule
+
+#### insert
+inserts a `character` or a `string` ahead of the captured input, then continues from the start of the inserted text
+
+if you capture `ab` and insert `f`, and the input is `abcd`, then it will transform the input into `abfcd` and then continue at `f` on the next rule, and then `c` on the next rule, depending on the rule
+
+#### insert and rescan
+same as doing `insert` and then `rescan`, with above, it will continue at `a` on the next rule, and then `b` on the next rule, and then `f` on the next rule, depending on the rule
