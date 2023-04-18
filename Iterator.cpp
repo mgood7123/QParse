@@ -1,7 +1,11 @@
 #include "Iterator.h"
 
 QParse::Iterator::Iterator(QParse_RULES____STRING * allocated_input) {
+  
+    name = "unknown";
+    
     input = allocated_input;
+    
     allocated = true;
 
     info.iteratorCurrent = this->input->cbegin();
@@ -14,6 +18,9 @@ QParse::Iterator::Iterator(QParse_RULES____STRING * allocated_input) {
 }
 
 QParse::Iterator::Iterator(QParse_RULES____STRING &input) : input(&input) {
+  
+    name = "unknown";
+    
     info.iteratorCurrent = this->input->cbegin();
     info.current_char = info.iteratorCurrent[0];
 
@@ -24,6 +31,9 @@ QParse::Iterator::Iterator(QParse_RULES____STRING &input) : input(&input) {
 }
 
 QParse::Iterator::Iterator(const char * input) {
+  
+    name = "unknown";
+    
     this->input = new QParse_RULES____STRING(input);
     allocated = true;
     info.iteratorCurrent = this->input->cbegin();
@@ -43,10 +53,11 @@ void QParse::Iterator::set_next_prev_callback(std::function<void (const char *)>
     this->next_prev_callback = next_prev_callback;
 }
 
-QParse::Iterator QParse::Iterator::copy() {
+QParse::Iterator QParse::Iterator::copy() const {
     if (allocated) {
         // we need to copy our string since it will be deleted if this iterator dies
         Iterator iterator(QParse_RULES____COPY_STRING(input));
+        iterator.name = name;
         auto save1 = save();
         iterator.load(save1);
         iterator.set_next_prev_callback(next_prev_callback);
@@ -54,6 +65,7 @@ QParse::Iterator QParse::Iterator::copy() {
         return iterator;
     } else {
         Iterator iterator(*input);
+        iterator.name = name;
         iterator.info = info;
         iterator.set_next_prev_callback(next_prev_callback);
         // we require a fresh stack
@@ -258,7 +270,7 @@ void QParse::Iterator::advance(size_t n) {
     setCurrent(info.iteratorCurrent+n);
 }
 
-QParse::Iterator::SaveState QParse::Iterator::save() {
+QParse::Iterator::SaveState QParse::Iterator::save() const {
     SaveState saveState;
     saveState.info.iteratorCurrent = info.iteratorCurrent - input->cbegin();
     saveState.info.line_start = info.line_start - input->cbegin();

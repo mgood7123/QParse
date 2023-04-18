@@ -63,6 +63,8 @@ namespace QParse {
 
     public:
         QParse_RULES____STRING *input;
+        
+        QParse_RULES____STRING name;
 
         bool enable_logging;
 
@@ -72,11 +74,11 @@ namespace QParse {
 
         void set_next_prev_callback(std::function<void(const char*)> next_prev_callback);
 
-        Iterator copy();
+        Iterator copy() const;
 
         uint64_t line() const;
         uint64_t column() const;
-
+        
         bool has_next() const;
 
         QParse_RULES____CHAR next();
@@ -131,7 +133,7 @@ namespace QParse {
             QParse_RULES____VECTOR <SaveInfo> infoStack;
         };
 
-        SaveState save();
+        SaveState save() const;
 
         SaveState save(QParse_RULES____STRING::const_iterator iterator);
 

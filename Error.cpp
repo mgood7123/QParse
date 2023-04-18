@@ -2,7 +2,7 @@
 #include QParse_RULES____COUT_INCLUDE
 
 void QParse::Rules::UndoRedo::print_error(Iterator & iterator, const char * indent) {
-    QParse_RULES____COUT_NO_SPACE << indent << "  at source:" << iterator.line() << ":" << iterator.column() << " (index " << iterator.currentPosition() << ") :" QParse_RULES____COUT_ENDL;
+    QParse_RULES____COUT_NO_SPACE << indent << "  at source:" << iterator.name << ":" << iterator.line() << ":" << iterator.column() << " (index " << iterator.currentPosition() << ") :" QParse_RULES____COUT_ENDL;
     QParse_RULES____COUT_NO_SPACE_NO_QUOTE << indent << "    input: \"" << iterator.lineString() << "\"" QParse_RULES____COUT_ENDL;
 
     QParse_RULES____STRING pre = "           ";

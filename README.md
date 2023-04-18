@@ -109,7 +109,13 @@ unless explicitly stated, all rules fail if they encounter EOF
 #### Error
 fails the entire rule, except if inside an `Or`, `Optional`, or `At` rules
 
-any further execution is haulted, and the input stack is unwound
+any further execution is haulted, and the input stack (see `Input Modification`) is unwound
+
+the name will be displayed for identifying iterators
+
+the name can be changed via the `iterator.name` variable
+
+the default name is `unknown`
 
 #### ErrorIf*Match
 same as `Error` but conditionally
