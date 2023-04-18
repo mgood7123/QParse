@@ -20,21 +20,21 @@ namespace QParse {
 
         using Rule::match;
 
-        virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override {
+        virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors = true) override {
             IteratorMatcher::MatchData match;
             match.begin = iterator.current();
             match.end = iterator.current();
             match.matched = false;
 
             if (condition()) {
-                    auto tmp_ = rule_if_true.match(iterator, undo, doAction);
+                    auto tmp_ = rule_if_true.match(iterator, undo, doAction, logErrors);
                     if (!tmp_.has_value()) return std::nullopt;
                     auto tmp = *tmp_;
                     match.matched = tmp.matched;
                     match.end = tmp.end;
                     match.matches += tmp.matches;
             } else {
-                auto tmp_ = rule_if_false.match(iterator, undo, doAction);
+                auto tmp_ = rule_if_false.match(iterator, undo, doAction, logErrors);
                 if (!tmp_.has_value()) return std::nullopt;
                 auto tmp = *tmp_;
                 match.matched = tmp.matched;

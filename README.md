@@ -159,7 +159,7 @@ TemporaryAction B1
     TemporaryAction B3
 ```
 
-only `B1` will run, if an `Error` is encountered, it will not log anything (due to `At` semantics of action execution)
+only `B1` will run, any `Error` rules will be logged but their actions will not be executed
 
 #### At
 executes the given `rule` but does not consume any input and does not execute any actions, no errors are logged
@@ -175,11 +175,16 @@ always matches regardless of if the given `Rule` matches or not, any `Error` rul
 #### Log*
 various rules for logging information about the current given rule
 
+#### LogCurrentCharacter
+prints the current character, does not consume input
+
 #### LogTrace
 combines all Log* into a single rule
 
 #### ZeroOrMore
-keps matching until the given rule fails to match
+keeps matching until the given rule fails to match, always succeeds
+
+equivalent to `Optional(OneOrMore(rule))`
 
 #### OneOrMore
 matches if the given rule matches at least once, and keeps matching until the given rule fails to match
@@ -190,7 +195,7 @@ matches rule B until rule A is matched
 ```
 1. A is matched, if A succeeds, the rule succeeds
 2. if A fails, B is matched
-3. if B succeds, go to 1
+3. if B succeeds, go to 1
 4. if B fails to match, the rule fails
 ```
 

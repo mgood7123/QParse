@@ -22,8 +22,8 @@ void QParse::Rules::Stack::popAll() {
     while (!actionStack.empty()) actionStack.pop();
 }
 
-std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Stack::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
-    auto match_ = (ruleStack.empty() ? baseRule : ruleStack.top()).rule->match(iterator, undo, doAction);
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Stack::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
+    auto match_ = (ruleStack.empty() ? baseRule : ruleStack.top()).rule->match(iterator, undo, doAction, logErrors);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
     if (match && doAction) {

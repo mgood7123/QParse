@@ -106,13 +106,13 @@ namespace QParse {
 
             Rule(Action action = NO_ACTION);
 
-            std::optional<IteratorMatcher::MatchData> match(const char * string, bool doAction = true);
-            std::optional<IteratorMatcher::MatchData> match(QParse_RULES____STRING & string, bool doAction = true);
-            std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, bool doAction = true);
+            std::optional<IteratorMatcher::MatchData> match(const char * string, bool doAction = true, bool logErrors = true);
+            std::optional<IteratorMatcher::MatchData> match(QParse_RULES____STRING & string, bool doAction = true, bool logErrors = true);
+            std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, bool doAction = true, bool logErrors = true);
 
-            std::optional<IteratorMatcher::MatchData> match(const char * string, UndoRedo *undo, bool doAction = true);
-            std::optional<IteratorMatcher::MatchData> match(QParse_RULES____STRING & string, UndoRedo *undo, bool doAction = true);
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true);
+            std::optional<IteratorMatcher::MatchData> match(const char * string, UndoRedo *undo, bool doAction = true, bool logErrors = true);
+            std::optional<IteratorMatcher::MatchData> match(QParse_RULES____STRING & string, UndoRedo *undo, bool doAction = true, bool logErrors = true);
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true);
 
             virtual ~Rule();
         };
@@ -123,7 +123,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
 
         class AdvanceInputBy : public Rule {
@@ -138,7 +138,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
 
         struct Fail : Rule {
@@ -147,7 +147,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
 
         struct Any : Rule {
@@ -155,7 +155,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
 
         struct Char : Rule {
@@ -165,7 +165,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
 
         struct EndOfFile : Rule {
@@ -173,7 +173,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
 
         struct NewlineOrEOF : Rule {
@@ -181,7 +181,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
 
         struct Newline : Rule {
@@ -189,7 +189,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
 
         struct String : Rule {
@@ -199,7 +199,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
 
         struct RuleHolder : Rule {
@@ -225,7 +225,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
 
             virtual ~RuleHolder();
         };
@@ -235,7 +235,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
 
         };
 
@@ -245,7 +245,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
 
         class LogMatchStatus : public RuleHolder {
@@ -258,7 +258,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
 
         };
 
@@ -272,7 +272,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
 
         };
 
@@ -286,7 +286,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
 
         };
 
@@ -300,7 +300,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
 
         };
 
@@ -310,7 +310,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
 
         struct OneOrMore : RuleHolder {
@@ -319,7 +319,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
 
         struct ZeroOrMore : RuleHolder {
@@ -328,7 +328,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
 
         struct MatchBUntilA : Rule {
@@ -339,7 +339,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
 
         struct Or : Rule {
@@ -349,7 +349,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
 
         struct Sequence : Rule {
@@ -359,7 +359,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
 
         struct Until : RuleHolder {
@@ -368,7 +368,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
 
         struct Range : Rule {
@@ -378,7 +378,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
 
         struct At : RuleHolder {
@@ -387,7 +387,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
 
         struct NotAt : RuleHolder {
@@ -396,7 +396,7 @@ namespace QParse {
 
             using Rule::match;
 
-            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
         };
     }
 }

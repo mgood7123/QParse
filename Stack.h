@@ -30,7 +30,7 @@ namespace QParse {
 
         using Rule::match;
 
-        virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true) override;
+        virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
     };
     }
 }

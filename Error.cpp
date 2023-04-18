@@ -28,27 +28,27 @@ void QParse::Rules::printError(const QParse_RULES____STRING & message, Iterator 
 
 QParse::Rules::Error::Error(const QParse_RULES____STRING &message, Action action) : Rule(action), message(message) {}
 
-std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Error::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Error::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
     IteratorMatcher::MatchData match;
     match.begin = iterator.current();
     match.end = iterator.current();
     match.matched = false;
     if (doAction) action(Input(iterator, match, undo, 0));
     //iterator.popInfo(match.matches);
-    if (doAction) printError(message, iterator, *undo);
+    if (logErrors) printError(message, iterator, *undo);
     return std::nullopt;
 }
 
 QParse::Rules::ErrorIfMatch::ErrorIfMatch(Rule *rule, const QParse_RULES____STRING &message, Action action) : RuleHolder(rule, action), message(message) {}
 
-std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::ErrorIfMatch::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
-    auto match_ = rule->match(iterator, undo, doAction);
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::ErrorIfMatch::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
+    auto match_ = rule->match(iterator, undo, doAction, logErrors);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
     if (match) {
         if (doAction) action(Input(iterator, match, undo, 0));
         //iterator.popInfo(match.matches);
-        if (doAction) printError(message, iterator, *undo);
+        if (logErrors) printError(message, iterator, *undo);
         return std::nullopt;
     }
     return match;
@@ -56,14 +56,14 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::ErrorIfMatch::m
 
 QParse::Rules::ErrorIfNotMatch::ErrorIfNotMatch(Rule *rule, const QParse_RULES____STRING &message, Action action) : RuleHolder(rule, action), message(message) {}
 
-std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::ErrorIfNotMatch::match(Iterator &iterator, UndoRedo *undo, bool doAction) {
-    auto match_ = rule->match(iterator, undo, doAction);
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::ErrorIfNotMatch::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
+    auto match_ = rule->match(iterator, undo, doAction, logErrors);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
     if (!match) {
         if (doAction) action(Input(iterator, match, undo, 0));
         //iterator.popInfo(match.matches);
-        if (doAction) printError(message, iterator, *undo);
+        if (logErrors) printError(message, iterator, *undo);
         return std::nullopt;
     }
     return match;
