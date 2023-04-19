@@ -76,7 +76,13 @@ void QParse::Rules::Input::rescan() {
         undo->disable_push_command();
         undo_iterator = undo->command->push_undo_iterator(iterator);
     }
+    
+    auto st = iterator.save(match.end);
+    auto sti = iterator.save(iterator.info.line_end);
     iterator.popInfo(pops);
+    match.end = match.begin;
+    iterator.load(sti, iterator.info.line_end);
+    
     if (undo != nullptr) {
         undo->command->push_redo_iterator(undo_iterator, iterator);
         undo->enable_push_command();
@@ -84,10 +90,6 @@ void QParse::Rules::Input::rescan() {
 }
 
 void QParse::Rules::Input::eraseAndRescan() {
-    if (executed) {
-        throw new std::runtime_error("cannot modify input more than once in the same rule");
-    }
-    executed = true;
     if (undo != nullptr) {
         undo->push_command(QParse_RULES____STRING("After erasing ") + Input::quote(this->string()) + " and rescan");
         undo->disable_push_command();
@@ -115,10 +117,6 @@ void QParse::Rules::Input::replace(const char &character) {
 }
 
 void QParse::Rules::Input::replace_(const QParse_RULES____STRING &string) {
-    if (executed) {
-        throw new std::runtime_error("cannot modify input more than once in the same rule");
-    }
-    executed = true;
 
     // modifying a string invalidates the iterators
 
@@ -144,8 +142,9 @@ void QParse::Rules::Input::replace_(const QParse_RULES____STRING &string) {
     QParse_RULES____STRING::const_iterator old_end;
 
     iterator.load(old_end_savePoint, old_end);
-
+    
     match.end = match.begin + string.size();
+
 
     if (undo != nullptr) {
         auto k = undo->command->push_undo_string_replacement(iterator.input, match.begin, match.end, old_string);
@@ -207,10 +206,6 @@ void QParse::Rules::Input::insert(const char &character) {
 }
 
 void QParse::Rules::Input::insert(const QParse_RULES____STRING &string) {
-    if (executed) {
-        throw new std::runtime_error("cannot modify input more than once in the same rule");
-    }
-    executed = true;
 
     QParse::Rules::UndoRedo::UNDO_KEY_PTR undo_iterator;
 

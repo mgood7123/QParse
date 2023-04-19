@@ -35,6 +35,9 @@
 // child previous--------------------^       // '7' from itself, decreases iterator and returns it
 
 namespace QParse {
+    namespace Rules {
+        class Input;
+    }
     class Iterator {
 #ifdef GTEST_API_
     public:
@@ -55,6 +58,9 @@ namespace QParse {
             uint64_t current_column = 1;
             QParse_RULES____CHAR current_char = '\0';
         };
+        
+        friend Rules::Input;
+        
         Info info;
         QParse_RULES____VECTOR <Info> infoStack;
         bool allocated = false;

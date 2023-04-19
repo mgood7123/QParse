@@ -26,6 +26,10 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Stack::match(It
     auto match_ = (ruleStack.empty() ? baseRule : ruleStack.top()).rule->match(iterator, undo, doAction, logErrors);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
+    if (!match) {
+      iterator.popInfo(match.matches);
+      match.matches = 0;
+    }
     if (match && doAction) {
         (actionStack.empty() ? baseAction : actionStack.top())(Input(iterator, match, undo, match.matches));
     }

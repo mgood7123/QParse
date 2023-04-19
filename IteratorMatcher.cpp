@@ -1,19 +1,16 @@
 #include "IteratorMatcher.h"
 
 
-QParse::IteratorMatcher::MatchData::MatchData() : matched(false) {}
+QParse::IteratorMatcher::MatchData::MatchData(const Iterator & it) : MatchData(it, false) {}
 
-QParse::IteratorMatcher::MatchData::MatchData(bool matched) : matched(matched) {}
+QParse::IteratorMatcher::MatchData::MatchData(const Iterator & it, bool matched) : begin(it.current()), end(it.current()), matched(matched) {}
 
 QParse::IteratorMatcher::MatchData::operator bool() const noexcept {
     return matched;
 }
 
 QParse::IteratorMatcher::MatchData QParse::IteratorMatcher::match(Iterator &i) {
-    MatchData matchData;
-    matchData.begin = i.current();
-    matchData.end = i.current();
-    matchData.matched = false;
+    MatchData matchData(i, false);
     if (!i.has_next()) {
         // unexpected EOF
         return matchData;
@@ -27,10 +24,7 @@ QParse::IteratorMatcher::MatchData QParse::IteratorMatcher::match(Iterator &i) {
 }
 
 QParse::IteratorMatcher::MatchData QParse::IteratorMatcher::match(Iterator &i, char value) {
-    MatchData matchData;
-    matchData.begin = i.current();
-    matchData.end = i.current();
-    matchData.matched = false;
+    MatchData matchData(i, false);
     if (!i.has_next()) {
         // unexpected EOF
         return matchData;
@@ -48,10 +42,7 @@ QParse::IteratorMatcher::MatchData QParse::IteratorMatcher::match(Iterator &i, c
 }
 
 QParse::IteratorMatcher::MatchData QParse::IteratorMatcher::match(Iterator &i, QParse_RULES____STRING &value) {
-    MatchData matchData;
-    matchData.begin = i.current();
-    matchData.end = i.current();
-    matchData.matched = false;
+    MatchData matchData(i, false);
     if (value.size() == 0) {
         // match EOF if input is empty
         matchData.matched = !i.has_next();

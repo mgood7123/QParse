@@ -28,6 +28,155 @@ Iterator iter = "some string";
 
 we then create a `Grammar`
 
+# Custom Rules
+
+first, lets get the obvious out of the way
+
+QParse supports the creation of user defined `Rule` objects
+
+a custom `Rule` object can be defined by extending from `QParse::Rules::Rule` (for a single rule), `QParse::Rules::RuleHolder` (for a collection of rules),  or any of their subclasses
+
+it is recommended to extend from `Rule` and store `Rule` input arguments in one or more `RuleHolder` variables, where the number of rules is known, or in a vector of `RuleHolder` if the number of rules is unknown
+
+it is recommended to extend from `RuleHolder` directly if the input is a single rule
+
+for a single input rule, either `Rule` or `RuleHolder` will do, but `RuleHolder` is recommended if possible
+
+here is the rule for the custom `If` rule, implemented via `Rule`
+
+```cpp
+#include "Rules.h"
+
+namespace QParse {
+    namespace Rules {
+
+    using Condition = std::function<bool()>;
+
+    class If : public Rule {
+        Condition condition;
+        RuleHolder rule_if_true;
+        RuleHolder rule_if_false;
+    public:
+
+        If(Condition cond, Rule * rule_if_true) : condition(cond), rule_if_true(rule_if_true), rule_if_false(nullptr) {}
+
+        If(Condition cond, Rule * rule_if_true, Rule* rule_if_false) : condition(cond), rule_if_true(rule_if_true), rule_if_false(rule_if_false) {}
+
+        using Rule::match;
+
+        virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors = true) override {
+            IteratorMatcher::MatchData match;
+            match.begin = iterator.current();
+            match.end = iterator.current();
+            match.matched = false;
+
+            if (condition()) {
+                    auto tmp_ = rule_if_true.match(iterator, undo, doAction, logErrors);
+                    if (!tmp_.has_value()) return std::nullopt;
+                    auto tmp = *tmp_;
+                    match.matched = tmp.matched;
+                    match.end = tmp.end;
+                    match.matches += tmp.matches;
+            } else {
+                auto tmp_ = rule_if_false.match(iterator, undo, doAction, logErrors);
+                if (!tmp_.has_value()) return std::nullopt;
+                auto tmp = *tmp_;
+                match.matched = tmp.matched;
+                match.end = tmp.end;
+                match.matches += tmp.matches;
+            }
+
+            return match;
+        }
+    };
+    }
+}
+```
+
+here is the rule for `Optional`, implemented via `RuleHolder`
+
+```cpp
+        struct Optional : RuleHolder {
+            Optional(Rule * rule, Action action = NO_ACTION);
+
+            using Rule::match;
+
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
+        };
+```
+```cpp
+QParse::Rules::Optional::Optional(Rule *rule, Action action) : RuleHolder(rule, action) {}
+
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Optional::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
+    IteratorMatcher::MatchData match;
+    match.begin = iterator.current();
+    match.end = iterator.current();
+    auto tmp_ = rule->match(iterator, undo, doAction, logErrors);
+    if (!tmp_.has_value()) return std::nullopt;
+    auto tmp = *tmp_;
+    if (tmp) {
+        match.end = tmp.end;
+        match.matches = tmp.matches;
+    }
+    match.matched = true;
+    iterator.pushInfo();
+    match.matches++;
+    if (doAction) action(Input(iterator, match, undo, match.matches));
+    return match;
+}
+```
+
+and here is the rule for `Or`, implemented via `Rule`
+
+```cpp
+        struct Or : Rule {
+            QParse_RULES____VECTOR<RuleHolder> rules;
+
+            Or(std::initializer_list<Rule*> rules, Action action = NO_ACTION);
+
+            using Rule::match;
+
+            virtual std::optional<IteratorMatcher::MatchData> match(Iterator &iterator, UndoRedo *undo, bool doAction = true, bool logErrors = true) override;
+        };
+```
+```cpp
+QParse::Rules::Or::Or(std::initializer_list<Rule *> rules, Action action) : Rule(action) {
+
+    for (Rule * rule : rules) {
+        this->rules.push_back(rule);
+    }
+}
+
+std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Or::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
+    IteratorMatcher::MatchData match;
+    match.begin = iterator.current();
+    match.end = iterator.current();
+    match.matched = false;
+    if (rules.size() == 0) {
+        match.matched = true;
+        iterator.pushInfo();
+        match.matches++;
+        if (doAction) action(Input(iterator, match, undo, match.matches));
+        return match;
+    }
+    for (Rule & rule : rules) {
+        auto match_ = rule.match(iterator, undo, doAction, logErrors);
+        if (!match_.has_value()) {
+            iterator.popInfo(match.matches);
+            return std::nullopt;
+        }
+        match = *match_;
+        if (match) {
+            if (doAction) action(Input(iterator, match, undo, match.matches));
+            return match;
+        } else {
+            iterator.popInfo(match.matches);
+            match.matches = 0;
+        }
+    }
+    return match;
+}
+```
 # Rule
 
 a `Grammar` is a set of `Rule` objects that define the `Grammar Definition`
@@ -118,7 +267,7 @@ the name can be changed via the `iterator.name` variable
 the default name is `unknown`
 
 #### ErrorIf*Match
-same as `Error` but conditionally
+same as `Error` but conditionally, actions are invoked conditionally, respectively
 
 #### EndOfFile
 explicitly matches against `EOF` (succeeds if and ONLY if `EOF` is encountered)

@@ -2,7 +2,7 @@
 #include QParse_RULES____COUT_INCLUDE
 
 void QParse::Rules::UndoRedo::print_error(Iterator & iterator, const char * indent) {
-  QParse_RULES____COUT_NO_SPACE << rang::fg::red;
+  QParse_RULES____COUT_NO_SPACE << rang::fg::blue;
   
     QParse_RULES____COUT_NO_SPACE << indent << "  at source: " << iterator.name << ":" << iterator.line() << ":" << iterator.column() << " (" << "line " << iterator.line() << ", column " << iterator.column() << ", index " << iterator.currentPosition() << ") :" QParse_RULES____COUT_ENDL;
     QParse_RULES____COUT_NO_SPACE_NO_QUOTE << indent << "    input: \"" << iterator.lineString() << "\"" QParse_RULES____COUT_ENDL;
@@ -40,10 +40,7 @@ void QParse::Rules::printError(const QParse_RULES____STRING & message, Iterator 
 QParse::Rules::Error::Error(const QParse_RULES____STRING &message, Action action) : Rule(action), message(message) {}
 
 std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Error::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
-    IteratorMatcher::MatchData match;
-    match.begin = iterator.current();
-    match.end = iterator.current();
-    match.matched = false;
+    IteratorMatcher::MatchData match(iterator, false);
     if (doAction) action(Input(iterator, match, undo, 0));
     //iterator.popInfo(match.matches);
     if (logErrors) printError(message, iterator, *undo);
@@ -56,12 +53,17 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::ErrorIfMatch::m
     auto match_ = rule->match(iterator, undo, doAction, logErrors);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
+    if (!match) {
+      iterator.popInfo(match.matches);
+      match.matches = 0;
+    }
     if (match) {
         if (doAction) action(Input(iterator, match, undo, 0));
         //iterator.popInfo(match.matches);
         if (logErrors) printError(message, iterator, *undo);
         return std::nullopt;
     }
+    match.matched = true;
     return match;
 }
 
@@ -71,6 +73,10 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::ErrorIfNotMatch
     auto match_ = rule->match(iterator, undo, doAction, logErrors);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
+    if (!match) {
+      iterator.popInfo(match.matches);
+      match.matches = 0;
+    }
     if (!match) {
         if (doAction) action(Input(iterator, match, undo, 0));
         //iterator.popInfo(match.matches);

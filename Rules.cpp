@@ -46,11 +46,7 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Rule::match(QPa
 }
 
 std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Rule::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
-    IteratorMatcher::MatchData match;
-    match.matched = false;
-    match.begin = iterator.current();
-    match.end = iterator.current();
-    return match;
+    return IteratorMatcher::MatchData(iterator, false);
 }
 
 QParse::Rules::Rule::~Rule() {
@@ -60,12 +56,9 @@ QParse::Rules::Rule::~Rule() {
 QParse::Rules::Success::Success(Action action) : Rule(action) {}
 
 std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Success::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
-    IteratorMatcher::MatchData match;
-    match.matched = true;
-    match.begin = iterator.current();
+    IteratorMatcher::MatchData match(iterator, true);
     iterator.pushInfo();
     match.matches++;
-    match.end = iterator.current();
     if (doAction) action(Input(iterator, match, undo, match.matches));
     return match;
 }
@@ -75,9 +68,7 @@ QParse::Rules::AdvanceInputBy::AdvanceInputBy(Action action) : Rule(action), n(1
 QParse::Rules::AdvanceInputBy::AdvanceInputBy(int n, Action action) : Rule(action), n(n < 0 ? 0 : n) {}
 
 std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::AdvanceInputBy::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
-    IteratorMatcher::MatchData match;
-    match.matched = true;
-    match.begin = iterator.current();
+    IteratorMatcher::MatchData match(iterator, true);
     iterator.pushInfo();
     match.matches++;
     iterator.advance(n);
@@ -89,10 +80,7 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::AdvanceInputBy:
 QParse::Rules::Fail::Fail(Action action) : Rule(action) {}
 
 std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Fail::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
-    IteratorMatcher::MatchData match;
-    match.matched = false;
-    match.begin = iterator.current();
-    match.end = iterator.current();
+    IteratorMatcher::MatchData match(iterator, false);
     if (doAction) action(Input(iterator, match, undo, match.matches));
     return match;
 }
@@ -120,10 +108,7 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Char::match(Ite
 QParse::Rules::EndOfFile::EndOfFile(Action action) : Rule(action) {}
 
 std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::EndOfFile::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
-    IteratorMatcher::MatchData match;
-    match.begin = iterator.current();
-    match.end = iterator.current();
-    match.matched = false;
+    IteratorMatcher::MatchData match(iterator, false);
     if (!iterator.has_next()) {
         match.matched = true;
         iterator.pushInfo();
@@ -142,7 +127,12 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::NewlineOrEOF::m
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
 
-    if (match.matched) {
+    if (!match) {
+      iterator.popInfo(match.matches);
+      match.matches = 0;
+    }
+    
+    if (match) {
         if (doAction) action(Input(iterator, match, undo, match.matches));
     } else if (!iterator.has_next()) {
         match.matched = true;
@@ -160,8 +150,13 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Newline::match(
     auto match_ = Or({new String("\r\n"), new Char('\n')}).match(iterator, undo);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
+    
+    if (!match) {
+      iterator.popInfo(match.matches);
+      match.matches = 0;
+    }
 
-    if (match.matched && doAction) {
+    if (match && doAction) {
         action(Input(iterator, match, undo, match.matches));
     }
     return match;
@@ -172,6 +167,10 @@ QParse::Rules::String::String(const QParse_RULES____STRING &string, Action actio
 std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::String::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
     auto match = IteratorMatcher::match(iterator, string);
 
+    if (!match) {
+      iterator.popInfo(match.matches);
+      match.matches = 0;
+    }
     if (match && doAction) {
         action(Input(iterator, match, undo, match.matches));
     }
@@ -268,10 +267,7 @@ QParse::Rules::RuleHolder &QParse::Rules::RuleHolder::operator=(RuleHolder &&oth
 
 std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::RuleHolder::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
     if (ref == nullptr) { // we have no rule currently set
-        IteratorMatcher::MatchData match;
-        match.begin = iterator.current();
-        match.end = iterator.current();
-        match.matched = true;
+        IteratorMatcher::MatchData match(iterator, true);
         iterator.pushInfo();
         match.matches++;
         if (doAction) action(Input(iterator, match, undo, match.matches));
@@ -280,6 +276,10 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::RuleHolder::mat
     auto match_ = rule->match(iterator, undo, doAction, logErrors);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
+    if (!match) {
+      iterator.popInfo(match.matches);
+      match.matches = 0;
+    }
     if (match && doAction) {
         action(Input(iterator, match, undo, match.matches));
     }
@@ -294,6 +294,10 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::TemporaryAction
     auto match_ = rule->match(iterator, undo, false, logErrors);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
+    if (!match) {
+      iterator.popInfo(match.matches);
+      match.matches = 0;
+    }
     if (match && doAction) {
         action(Input(iterator, match, undo, match.matches));
     }
@@ -303,12 +307,9 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::TemporaryAction
 QParse::Rules::LogCurrentCharacter::LogCurrentCharacter(Action action) : Rule(action) {}
 
 std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::LogCurrentCharacter::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
-    IteratorMatcher::MatchData match;
-    match.begin = iterator.current();
-    match.matched = true;
+    IteratorMatcher::MatchData match(iterator, true);
     iterator.pushInfo();
     match.matches++;
-    match.end = iterator.current();
     if (iterator.enable_logging) QParse_RULES____COUT << "current character: " << Input::quote(iterator.peekNext()) QParse_RULES____COUT_ENDL;
     if (doAction) action(Input(iterator, match, undo, match.matches));
     return match;
@@ -320,6 +321,10 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::LogMatchStatus:
     auto match_ = rule->match(iterator, undo, doAction, logErrors);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
+    if (!match) {
+      iterator.popInfo(match.matches);
+      match.matches = 0;
+    }
     if (iterator.enable_logging) QParse_RULES____COUT << "rule '" << ruleName << "' was " << (match ? "matched" : "not matched") QParse_RULES____COUT_ENDL;
     if (doAction) action(Input(iterator, match, undo, match.matches));
     return match;
@@ -331,6 +336,10 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::LogCapture::mat
     auto match_ = rule->match(iterator, undo, doAction, logErrors);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
+    if (!match) {
+      iterator.popInfo(match.matches);
+      match.matches = 0;
+    }
     if (iterator.enable_logging) {
         if (match) {
             QParse_RULES____COUT << "rule '" << ruleName << "' captured " << Input(iterator, match, undo, 0).quotedString() <<"\n" QParse_RULES____COUT_ENDL;
@@ -348,6 +357,10 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::LogInput::match
     auto match_ = rule->match(iterator, undo, doAction, logErrors);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
+    if (!match) {
+      iterator.popInfo(match.matches);
+      match.matches = 0;
+    }
     if (iterator.enable_logging) QParse_RULES____COUT << "input after rule '" << ruleName << "' : " << iterator.currentString() QParse_RULES____COUT_ENDL;
     if (doAction) action(Input(iterator, match, undo, match.matches));
     return match;
@@ -359,9 +372,15 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::LogTrace::match
     auto match_ = rule->match(iterator, undo, doAction, logErrors);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
+    if (!match) {
+      iterator.popInfo(match.matches);
+      match.matches = 0;
+    }
     if (iterator.enable_logging) {
         QParse_RULES____COUT << "rule: " << ruleName QParse_RULES____COUT_ENDL;
         QParse_RULES____COUT << "    match: " << (match ? "true" : "false") QParse_RULES____COUT_ENDL;
+        QParse_RULES____COUT << "    doAction: " << (doAction ? "true" : "false") QParse_RULES____COUT_ENDL;
+        QParse_RULES____COUT << "    logErrors: " << (logErrors ? "true" : "false") QParse_RULES____COUT_ENDL;
         if (match) {
             QParse_RULES____COUT << "    capture: " << Input(iterator, match, undo, 0).quotedString() QParse_RULES____COUT_ENDL;
         }
@@ -381,19 +400,14 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::LogTrace::match
 QParse::Rules::Optional::Optional(Rule *rule, Action action) : RuleHolder(rule, action) {}
 
 std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Optional::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
-    IteratorMatcher::MatchData match;
-    match.begin = iterator.current();
-    match.end = iterator.current();
     auto tmp_ = rule->match(iterator, undo, doAction, logErrors);
     if (!tmp_.has_value()) return std::nullopt;
-    auto tmp = *tmp_;
-    if (tmp) {
-        match.end = tmp.end;
-        match.matches = tmp.matches;
+    auto match = *tmp_;
+    if (!match) {
+      iterator.popInfo(match.matches);
+      match.matches = 0;
+      match.matched = true;
     }
-    match.matched = true;
-    iterator.pushInfo();
-    match.matches++;
     if (doAction) action(Input(iterator, match, undo, match.matches));
     return match;
 }
@@ -404,14 +418,24 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::OneOrMore::matc
     auto match_ = rule->match(iterator, undo, doAction, logErrors);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
+    if (!match) {
+      iterator.popInfo(match.matches);
+      match.matches = 0;
+    }
     if (match) {
         while (true) {
             auto tmp_ = rule->match(iterator, undo, doAction);
-            if (!tmp_.has_value()) return std::nullopt;
+            if (!tmp_.has_value()) {
+              iterator.popInfo(match.matches);
+              return std::nullopt;
+            }
             auto tmp = *tmp_;
-            if (!tmp) break;
-            match.end = tmp.end;
+            if (!tmp) {
+              iterator.popInfo(tmp.matches);
+              break;
+            }
             match.matches += tmp.matches;
+            match.end = tmp.end;
         }
         if (doAction) action(Input(iterator, match, undo, match.matches));
     }
@@ -425,6 +449,10 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::ZeroOrMore::mat
     auto match_ = rule->match(iterator, undo, doAction, logErrors);
     if (!match_.has_value()) return std::nullopt;
     auto match = *match_;
+    if (!match) {
+      iterator.popInfo(match.matches);
+      match.matches = 0;
+    }
     if (match && doAction) {
         action(Input(iterator, match, undo, match.matches));
     }
@@ -435,23 +463,29 @@ QParse::Rules::MatchBUntilA::MatchBUntilA(Rule *A, Rule *B, Action action) : Rul
 
 std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::MatchBUntilA::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
     // until A matches, match B
-    IteratorMatcher::MatchData match;
-    match.begin = iterator.current();
-    match.end = iterator.current();
-    match.matched = false;
+    IteratorMatcher::MatchData match(iterator, false);
     while (true) {
         auto tmp_ = A.match(iterator, undo, doAction, logErrors);
-        if (!tmp_.has_value()) return std::nullopt;
+        if (!tmp_.has_value()) {
+          iterator.popInfo(match.matches);
+          return std::nullopt;
+        }
         auto tmp = *tmp_;
         if (!tmp) {
+            iterator.popInfo(tmp.matches);
             tmp_ = B.match(iterator, undo, doAction, logErrors);
-            if (!tmp_.has_value()) return std::nullopt;
+            if (!tmp_.has_value()) {
+              iterator.popInfo(match.matches);
+              return std::nullopt;
+            }
             tmp = *tmp_;
+            match.matches += tmp.matches;
             if (!tmp) {
+                iterator.popInfo(match.matches);
+                match.matches = 0;
                 return match;
             }
             match.end = tmp.end;
-            match.matches += tmp.matches;
         } else {
             match.matched = true;
             match.end = tmp.end;
@@ -469,10 +503,7 @@ QParse::Rules::Or::Or(std::initializer_list<Rule *> rules, Action action) : Rule
 }
 
 std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Or::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
-    IteratorMatcher::MatchData match;
-    match.begin = iterator.current();
-    match.end = iterator.current();
-    match.matched = false;
+    IteratorMatcher::MatchData match(iterator, false);
     if (rules.size() == 0) {
         match.matched = true;
         iterator.pushInfo();
@@ -482,8 +513,15 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Or::match(Itera
     }
     for (Rule & rule : rules) {
         auto match_ = rule.match(iterator, undo, doAction, logErrors);
-        if (!match_.has_value()) return std::nullopt;
+        if (!match_.has_value()) {
+          iterator.popInfo(match.matches);
+          return std::nullopt;
+        }
         match = *match_;
+        if (!match) {
+          iterator.popInfo(match.matches);
+          match.matches = 0;
+        }
         if (match) {
             if (doAction) action(Input(iterator, match, undo, match.matches));
             return match;
@@ -499,10 +537,7 @@ QParse::Rules::Sequence::Sequence(std::initializer_list<Rule *> rules, Action ac
 }
 
 std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Sequence::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
-    IteratorMatcher::MatchData match;
-    match.begin = iterator.current();
-    match.end = iterator.current();
-    match.matched = false;
+    IteratorMatcher::MatchData match(iterator, false);
     if (rules.size() == 0) {
         match.matched = true;
         iterator.pushInfo();
@@ -512,15 +547,18 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Sequence::match
     }
     for (Rule & rule : rules) {
         auto tmp_ = rule.match(iterator, undo, doAction, logErrors);
-        if (!tmp_.has_value()) return std::nullopt;
+        if (!tmp_.has_value()) {
+          iterator.popInfo(match.matches);
+          return std::nullopt;
+        }
         auto tmp = *tmp_;
+        match.matches += tmp.matches;
         if (!tmp) {
             iterator.popInfo(match.matches);
             match.matches = 0;
             return match;
         }
         match.end = tmp.end;
-        match.matches += tmp.matches;
     }
     match.matched = true;
     iterator.pushInfo();
@@ -566,11 +604,9 @@ QParse::Rules::Range::Range(std::initializer_list<char> letters, Action action) 
 std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Range::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
     if (!iterator.has_next()) {
         // unexpected EOF
-        return IteratorMatcher::MatchData(false);
+        return IteratorMatcher::MatchData(iterator, false);
     }
-    IteratorMatcher::MatchData match;
-    match.begin = iterator.current();
-    match.end = iterator.current();
+    IteratorMatcher::MatchData match(iterator, false);
     iterator.pushInfo();
     QParse_RULES____CHAR ch = iterator.next();
     Iterator l(letters);
@@ -602,65 +638,28 @@ std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::Range::match(It
 QParse::Rules::At::At(Rule *rule, Action action) : RuleHolder(rule, action) {}
 
 std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::At::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
-    IteratorMatcher::MatchData match;
-    match.begin = iterator.current();
-    match.end = iterator.current();
-
-
-
-    // we do not want to return if we recieve an error
-
-    IteratorMatcher::MatchData tmp = false;
-
-    auto tmp_= rule->match(iterator, undo, false, false);
-
-    if (tmp_.has_value()) tmp = *tmp_;
-
-
-
-    iterator.popInfo(tmp.matches);
-    tmp.matches = 0;
-    if (tmp) {
-        match.matched = true;
-        iterator.pushInfo();
-        match.matches++;
-        if (doAction) action(Input(iterator, match, undo, match.matches));
-        return match;
+    auto match_ = rule->match(iterator, undo, false, false);
+    if (!match_.has_value()) return IteratorMatcher::MatchData(iterator, false);
+    auto match = *match_;
+    iterator.popInfo(match.matches);
+    match.matches = 0;
+    if (match && doAction) {
+        action(Input(iterator, match, undo, match.matches));
     }
-    match.matched = false;
     return match;
 }
 
 QParse::Rules::NotAt::NotAt(Rule *rule, Action action) : RuleHolder(rule, action) {}
 
 std::optional<QParse::IteratorMatcher::MatchData> QParse::Rules::NotAt::match(Iterator &iterator, UndoRedo *undo, bool doAction, bool logErrors) {
-    IteratorMatcher::MatchData match;
-    match.begin = iterator.current();
-    match.end = iterator.current();
-
-
-
-
-    // we do not want to return if we recieve an error
-
-    IteratorMatcher::MatchData tmp = false;
-
-    auto tmp_= rule->match(iterator, undo, false, false);
-
-    if (tmp_.has_value()) tmp = *tmp_;
-
-
-
-    iterator.popInfo(tmp.matches);
-    tmp.matches = 0;
-    if (!tmp) {
-        match.matched = true;
-        iterator.pushInfo();
-        match.matches++;
-        if (doAction) action(Input(iterator, match, undo, match.matches));
-        return match;
+   auto match_ = rule->match(iterator, undo, false, false);
+    auto match = match_.has_value() ? *match_ : IteratorMatcher::MatchData(iterator, false);
+    iterator.popInfo(match.matches);
+    match.matches = 0;
+    match.matched = !match.matched;
+    if (match && doAction) {
+        action(Input(iterator, match, undo, match.matches));
     }
-    match.matched = false;
     return match;
 }
 
