@@ -3,6 +3,8 @@
 
 #include "framework_defines.h"
 
+#include "termcolor.h"
+
 #include <functional>
 #include QParse_RULES____STRING_INCLUDE
 #include QParse_RULES____VECTOR_INCLUDE
